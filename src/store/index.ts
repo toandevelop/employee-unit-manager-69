@@ -5,9 +5,11 @@ import {
   departments as initialDepartments,
   positions as initialPositions,
   departmentEmployees as initialDepartmentEmployees,
-  positionEmployees as initialPositionEmployees
+  positionEmployees as initialPositionEmployees,
+  contractTypes as initialContractTypes,
+  contracts as initialContracts
 } from '../data/mockData';
-import { Employee, Department, Position, DepartmentEmployee, PositionEmployee } from '../types';
+import { Employee, Department, Position, DepartmentEmployee, PositionEmployee, ContractType, Contract } from '../types';
 import { toast } from 'sonner';
 
 interface AppState {
@@ -16,8 +18,9 @@ interface AppState {
   positions: Position[];
   departmentEmployees: DepartmentEmployee[];
   positionEmployees: PositionEmployee[];
+  contractTypes: ContractType[];
+  contracts: Contract[];
   
-  // Actions
   addEmployee: (employee: Omit<Employee, 'id' | 'departmentEmployees' | 'positionEmployees'> & { 
     departmentIds: string[],
     positionIds: string[] 
@@ -35,6 +38,14 @@ interface AppState {
   addPosition: (position: Omit<Position, 'id' | 'positionEmployees'>) => void;
   updatePosition: (id: string, position: Partial<Position>) => void;
   deletePosition: (id: string) => void;
+  
+  addContractType: (contractType: Omit<ContractType, 'id' | 'contracts'>) => void;
+  updateContractType: (id: string, contractType: Partial<ContractType>) => void;
+  deleteContractType: (id: string) => void;
+  
+  addContract: (contract: Omit<Contract, 'id' | 'employee' | 'contractType'>) => void;
+  updateContract: (id: string, contract: Partial<Contract>) => void;
+  deleteContract: (id: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -46,6 +57,8 @@ export const useAppStore = create<AppState>()(
         positions: initialPositions,
         departmentEmployees: initialDepartmentEmployees,
         positionEmployees: initialPositionEmployees,
+        contractTypes: initialContractTypes,
+        contracts: initialContracts,
         
         addEmployee: (employeeData) => {
           set((state) => {
@@ -254,6 +267,96 @@ export const useAppStore = create<AppState>()(
             };
           });
         },
+        
+        addContractType: (contractTypeData) => {
+          set((state) => {
+            const newId = (Math.max(...state.contractTypes.map(ct => parseInt(ct.id) || 0), 0) + 1).toString();
+            
+            const newContractType: ContractType = {
+              id: newId,
+              ...contractTypeData,
+              contracts: []
+            };
+            
+            toast.success("Thêm loại hợp đồng thành công");
+            
+            return {
+              contractTypes: [...state.contractTypes, newContractType]
+            };
+          });
+        },
+        
+        updateContractType: (id, contractTypeData) => {
+          set((state) => {
+            const updatedContractTypes = state.contractTypes.map(ct => 
+              ct.id === id ? { ...ct, ...contractTypeData } : ct
+            );
+            
+            toast.success("Cập nhật loại hợp đồng thành công");
+            
+            return {
+              contractTypes: updatedContractTypes
+            };
+          });
+        },
+        
+        deleteContractType: (id) => {
+          set((state) => {
+            const hasContracts = state.contracts.some(c => c.contractTypeId === id);
+            
+            if (hasContracts) {
+              toast.error("Không thể xoá loại hợp đồng đang có hợp đồng");
+              return state;
+            }
+            
+            toast.success("Xoá loại hợp đồng thành công");
+            
+            return {
+              contractTypes: state.contractTypes.filter(ct => ct.id !== id)
+            };
+          });
+        },
+        
+        addContract: (contractData) => {
+          set((state) => {
+            const newId = (Math.max(...state.contracts.map(c => parseInt(c.id) || 0), 0) + 1).toString();
+            
+            const newContract: Contract = {
+              id: newId,
+              ...contractData
+            };
+            
+            toast.success("Thêm hợp đồng thành công");
+            
+            return {
+              contracts: [...state.contracts, newContract]
+            };
+          });
+        },
+        
+        updateContract: (id, contractData) => {
+          set((state) => {
+            const updatedContracts = state.contracts.map(c => 
+              c.id === id ? { ...c, ...contractData } : c
+            );
+            
+            toast.success("Cập nhật hợp đồng thành công");
+            
+            return {
+              contracts: updatedContracts
+            };
+          });
+        },
+        
+        deleteContract: (id) => {
+          set((state) => {
+            toast.success("Xoá hợp đồng thành công");
+            
+            return {
+              contracts: state.contracts.filter(c => c.id !== id)
+            };
+          });
+        },
       }),
       {
         name: 'employee-management-storage',
@@ -263,6 +366,8 @@ export const useAppStore = create<AppState>()(
           positions: state.positions,
           departmentEmployees: state.departmentEmployees,
           positionEmployees: state.positionEmployees,
+          contractTypes: state.contractTypes,
+          contracts: state.contracts,
         }),
         version: 1,
         storage: {

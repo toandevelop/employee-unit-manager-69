@@ -9,6 +9,8 @@ import Layout from "./components/Layout";
 import EmployeesPage from "./pages/Index";
 import DepartmentsPage from "./pages/Departments";
 import PositionsPage from "./pages/Positions";
+import ContractsPage from "./pages/Contracts";
+import ContractTypesPage from "./pages/ContractTypes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,8 @@ const App = () => (
               <Route path="/" element={<EmployeesPage />} />
               <Route path="/departments" element={<DepartmentsPage />} />
               <Route path="/positions" element={<PositionsPage />} />
+              <Route path="/contracts" element={<ContractsPage />} />
+              <Route path="/contract-types" element={<ContractTypesPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>

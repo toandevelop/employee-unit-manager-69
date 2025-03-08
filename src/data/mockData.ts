@@ -1,4 +1,3 @@
-
 import { Employee, Department, Position, DepartmentEmployee, PositionEmployee } from "../types";
 
 export const positions: Position[] = [
@@ -153,7 +152,142 @@ export const employees: Employee[] = [
   },
 ];
 
-// Create DepartmentEmployee relationships
+export const contractTypes = [
+  {
+    id: "1",
+    code: "HD-XDTH",
+    name: "Hợp đồng xác định thời hạn",
+    contracts: []
+  },
+  {
+    id: "2",
+    code: "HD-KDTH",
+    name: "Hợp đồng không xác định thời hạn",
+    contracts: []
+  },
+  {
+    id: "3",
+    code: "HD-TV",
+    name: "Hợp đồng thử việc",
+    contracts: []
+  },
+  {
+    id: "4",
+    code: "HD-HDLD",
+    name: "Hợp đồng học nghề",
+    contracts: []
+  },
+  {
+    id: "5",
+    code: "HD-MLC",
+    name: "Hợp đồng mùa vụ",
+    contracts: []
+  }
+];
+
+export const contracts = [
+  {
+    id: "1",
+    code: "HD001",
+    employeeId: "1",
+    contractTypeId: "1",
+    startDate: "2023-01-01",
+    endDate: "2023-12-31",
+    baseSalary: 10000000,
+    allowance: 1500000
+  },
+  {
+    id: "2",
+    code: "HD002",
+    employeeId: "2",
+    contractTypeId: "2",
+    startDate: "2022-05-15",
+    endDate: "",
+    baseSalary: 12000000,
+    allowance: 2000000
+  },
+  {
+    id: "3",
+    code: "HD003",
+    employeeId: "3",
+    contractTypeId: "1",
+    startDate: "2023-02-10",
+    endDate: "2024-02-09",
+    baseSalary: 11000000,
+    allowance: 1800000
+  },
+  {
+    id: "4",
+    code: "HD004",
+    employeeId: "4",
+    contractTypeId: "3",
+    startDate: "2023-06-01",
+    endDate: "2023-08-31",
+    baseSalary: 8500000,
+    allowance: 1000000
+  },
+  {
+    id: "5",
+    code: "HD005",
+    employeeId: "5",
+    contractTypeId: "2",
+    startDate: "2021-12-01",
+    endDate: "",
+    baseSalary: 15000000,
+    allowance: 3000000
+  },
+  {
+    id: "6",
+    code: "HD006",
+    employeeId: "6",
+    contractTypeId: "1",
+    startDate: "2023-04-15",
+    endDate: "2024-04-14",
+    baseSalary: 12500000,
+    allowance: 2200000
+  },
+  {
+    id: "7",
+    code: "HD007",
+    employeeId: "7",
+    contractTypeId: "4",
+    startDate: "2023-07-01",
+    endDate: "2024-01-01",
+    baseSalary: 7500000,
+    allowance: 800000
+  },
+  {
+    id: "8",
+    code: "HD008",
+    employeeId: "8",
+    contractTypeId: "5",
+    startDate: "2023-05-01",
+    endDate: "2023-09-30",
+    baseSalary: 9000000,
+    allowance: 1200000
+  },
+  {
+    id: "9",
+    code: "HD009",
+    employeeId: "9",
+    contractTypeId: "1",
+    startDate: "2023-03-01",
+    endDate: "2024-02-29",
+    baseSalary: 13000000,
+    allowance: 2500000
+  },
+  {
+    id: "10",
+    code: "HD010",
+    employeeId: "10",
+    contractTypeId: "2",
+    startDate: "2022-09-15",
+    endDate: "",
+    baseSalary: 14500000,
+    allowance: 2800000
+  }
+];
+
 export const departmentEmployees: DepartmentEmployee[] = [
   { id: "1", employeeId: "1", departmentId: "1" },
   { id: "2", employeeId: "1", departmentId: "4" },
@@ -172,7 +306,6 @@ export const departmentEmployees: DepartmentEmployee[] = [
   { id: "15", employeeId: "8", departmentId: "4" },
 ];
 
-// Create PositionEmployee relationships
 export const positionEmployees: PositionEmployee[] = [
   { id: "1", employeeId: "1", positionId: "1" },
   { id: "2", employeeId: "1", positionId: "3" },
@@ -191,7 +324,6 @@ export const positionEmployees: PositionEmployee[] = [
   { id: "15", employeeId: "7", positionId: "4" },
 ];
 
-// Link relationships
 departmentEmployees.forEach(de => {
   const employee = employees.find(e => e.id === de.employeeId);
   const department = departments.find(d => d.id === de.departmentId);

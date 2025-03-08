@@ -40,3 +40,23 @@ export interface PositionEmployee {
   employee?: Employee;
   position?: Position;
 }
+
+export interface ContractType {
+  id: string;
+  code: string;
+  name: string;
+  contracts: Contract[];
+}
+
+export interface Contract {
+  id: string;
+  code: string;
+  employeeId: string;
+  contractTypeId: string;
+  startDate: string;
+  endDate: string;
+  baseSalary: number;
+  allowance: number;
+  employee?: Employee;
+  contractType?: ContractType;
+}
