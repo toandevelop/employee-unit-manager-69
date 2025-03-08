@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { 
@@ -32,6 +31,10 @@ interface AppState {
   addDepartment: (department: Omit<Department, 'id' | 'departmentEmployees'>) => void;
   updateDepartment: (id: string, department: Partial<Department>) => void;
   deleteDepartment: (id: string) => void;
+  
+  addPosition: (position: Omit<Position, 'id' | 'positionEmployees'>) => void;
+  updatePosition: (id: string, position: Partial<Position>) => void;
+  deletePosition: (id: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -49,7 +52,6 @@ export const useAppStore = create<AppState>()(
             const newId = (Math.max(...state.employees.map(e => parseInt(e.id))) + 1).toString();
             const { departmentIds, positionIds, ...employeeFields } = employeeData;
             
-            // Create new employee
             const newEmployee: Employee = {
               id: newId,
               ...employeeFields,
@@ -57,7 +59,6 @@ export const useAppStore = create<AppState>()(
               positionEmployees: []
             };
             
-            // Create department relationships
             const newDepartmentEmployees: DepartmentEmployee[] = departmentIds.map((deptId, index) => {
               const newDepartmentEmployeeId = (Math.max(...state.departmentEmployees.map(de => parseInt(de.id))) + index + 1).toString();
               return {
@@ -67,7 +68,6 @@ export const useAppStore = create<AppState>()(
               };
             });
             
-            // Create position relationships
             const newPositionEmployees: PositionEmployee[] = positionIds.map((posId, index) => {
               const newPositionEmployeeId = (Math.max(...state.positionEmployees.map(pe => parseInt(pe.id))) + index + 1).toString();
               return {
@@ -91,7 +91,6 @@ export const useAppStore = create<AppState>()(
           set((state) => {
             const { departmentIds, positionIds, ...employeeFields } = employeeData;
             
-            // Update employee basic info
             const updatedEmployees = state.employees.map(emp => 
               emp.id === id ? { ...emp, ...employeeFields } : emp
             );
@@ -99,12 +98,9 @@ export const useAppStore = create<AppState>()(
             let updatedDepartmentEmployees = [...state.departmentEmployees];
             let updatedPositionEmployees = [...state.positionEmployees];
             
-            // Update department relationships if provided
             if (departmentIds) {
-              // Remove existing relationships
               updatedDepartmentEmployees = updatedDepartmentEmployees.filter(de => de.employeeId !== id);
               
-              // Add new relationships
               const newDepartmentEmployees = departmentIds.map((deptId, index) => {
                 const newId = (Math.max(...state.departmentEmployees.map(de => parseInt(de.id))) + index + 1).toString();
                 return {
@@ -117,12 +113,9 @@ export const useAppStore = create<AppState>()(
               updatedDepartmentEmployees = [...updatedDepartmentEmployees, ...newDepartmentEmployees];
             }
             
-            // Update position relationships if provided
             if (positionIds) {
-              // Remove existing relationships
               updatedPositionEmployees = updatedPositionEmployees.filter(pe => pe.employeeId !== id);
               
-              // Add new relationships
               const newPositionEmployees = positionIds.map((posId, index) => {
                 const newId = (Math.max(...state.positionEmployees.map(pe => parseInt(pe.id))) + index + 1).toString();
                 return {
@@ -147,7 +140,6 @@ export const useAppStore = create<AppState>()(
         
         deleteEmployee: (id) => {
           set((state) => {
-            // Delete employee and all associated relationships
             toast.success("Xoá nhân viên thành công");
             
             return {
@@ -192,7 +184,6 @@ export const useAppStore = create<AppState>()(
         
         deleteDepartment: (id) => {
           set((state) => {
-            // First check if department has employees
             const hasEmployees = state.departmentEmployees.some(de => de.departmentId === id);
             
             if (hasEmployees) {
@@ -208,10 +199,64 @@ export const useAppStore = create<AppState>()(
             };
           });
         },
+        
+        addPosition: (positionData) => {
+          set((state) => {
+            const newId = (Math.max(...state.positions.map(p => parseInt(p.id))) + 1).toString();
+            
+            const newPosition: Position = {
+              id: newId,
+              ...positionData,
+              positionEmployees: []
+            };
+            
+            toast.success("Thêm chức vụ thành công");
+            
+            return {
+              positions: [...state.positions, newPosition]
+            };
+          });
+        },
+        
+        updatePosition: (id, positionData) => {
+          set((state) => {
+            const updatedPositions = state.positions.map(pos => 
+              pos.id === id ? { ...pos, ...positionData } : pos
+            );
+            
+            toast.success("Cập nhật thông tin chức vụ thành công");
+            
+            return {
+              positions: updatedPositions
+            };
+          });
+        },
+        
+        deletePosition: (id) => {
+          set((state) => {
+            const hasEmployees = state.positionEmployees.some(pe => pe.positionId === id);
+            
+            if (hasEmployees) {
+              const updatedPositionEmployees = state.positionEmployees.filter(pe => pe.positionId !== id);
+              
+              toast.success("Xoá chức vụ thành công");
+              
+              return {
+                positions: state.positions.filter(pos => pos.id !== id),
+                positionEmployees: updatedPositionEmployees
+              };
+            }
+            
+            toast.success("Xoá chức vụ thành công");
+            
+            return {
+              positions: state.positions.filter(pos => pos.id !== id)
+            };
+          });
+        },
       }),
       {
         name: 'employee-management-storage',
-        // Xác định rõ ràng những gì cần lưu
         partialize: (state) => ({
           employees: state.employees,
           departments: state.departments,
@@ -219,9 +264,7 @@ export const useAppStore = create<AppState>()(
           departmentEmployees: state.departmentEmployees,
           positionEmployees: state.positionEmployees,
         }),
-        // Đặt version để kiểm soát cấu trúc dữ liệu
         version: 1,
-        // Sử dụng localStorage để lưu trữ vĩnh viễn
         storage: {
           getItem: (name) => {
             const str = localStorage.getItem(name);

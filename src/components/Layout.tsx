@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Users, Building2, Menu, X } from 'lucide-react';
+import { Users, Building2, Briefcase, Menu, X } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -21,6 +21,7 @@ const Layout = ({ children }: LayoutProps) => {
   const navigationItems = [
     { path: '/', label: 'Quản lý nhân viên', icon: <Users className="h-5 w-5" /> },
     { path: '/departments', label: 'Quản lý đơn vị', icon: <Building2 className="h-5 w-5" /> },
+    { path: '/positions', label: 'Quản lý chức vụ', icon: <Briefcase className="h-5 w-5" /> },
   ];
   
   return (

@@ -8,6 +8,7 @@ import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import EmployeesPage from "./pages/Index";
 import DepartmentsPage from "./pages/Departments";
+import PositionsPage from "./pages/Positions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<EmployeesPage />} />
               <Route path="/departments" element={<DepartmentsPage />} />
+              <Route path="/positions" element={<PositionsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>
