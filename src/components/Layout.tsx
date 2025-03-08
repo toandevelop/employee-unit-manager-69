@@ -1,15 +1,29 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Users, Building2, Briefcase, FileText, FileType, Menu, X } from 'lucide-react';
+import { Users, Building2, Briefcase, FileText, FileType, Menu, X, ChevronDown, ChevronRight, LayoutDashboard } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
+interface NavigationItem {
+  path: string;
+  label: string;
+  icon: React.ReactNode;
+}
+
+interface NavigationCategory {
+  label: string;
+  icon: React.ReactNode;
+  items: NavigationItem[];
+}
+
 const Layout = ({ children }: LayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['dash']);
   const location = useLocation();
   
   // Close mobile menu on location change
@@ -17,13 +31,34 @@ const Layout = ({ children }: LayoutProps) => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
-  const navigationItems = [
+  const toggleCategory = (categoryLabel: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(categoryLabel)
+        ? prev.filter(item => item !== categoryLabel)
+        : [...prev, categoryLabel]
+    );
+  };
+
+  const mainItems: NavigationItem[] = [
     { path: '/', label: 'Quản lý nhân viên', icon: <Users className="h-5 w-5" /> },
-    { path: '/departments', label: 'Quản lý đơn vị', icon: <Building2 className="h-5 w-5" /> },
-    { path: '/positions', label: 'Quản lý chức vụ', icon: <Briefcase className="h-5 w-5" /> },
     { path: '/contracts', label: 'Quản lý hợp đồng', icon: <FileText className="h-5 w-5" /> },
-    { path: '/contract-types', label: 'Quản lý loại hợp đồng', icon: <FileType className="h-5 w-5" /> },
   ];
+  
+  const categories: NavigationCategory[] = [
+    {
+      label: 'Danh mục',
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      items: [
+        { path: '/departments', label: 'Quản lý đơn vị', icon: <Building2 className="h-5 w-5" /> },
+        { path: '/positions', label: 'Quản lý chức vụ', icon: <Briefcase className="h-5 w-5" /> },
+        { path: '/contract-types', label: 'Quản lý loại hợp đồng', icon: <FileType className="h-5 w-5" /> },
+      ]
+    }
+  ];
+  
+  const isCategoryActive = (category: NavigationCategory) => {
+    return category.items.some(item => location.pathname === item.path);
+  };
   
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -34,7 +69,8 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
         <div className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-2 px-4">
-            {navigationItems.map((item) => (
+            {/* Main navigation items */}
+            {mainItems.map((item) => (
               <li key={item.path}>
                 <Link
                   to={item.path}
@@ -46,6 +82,49 @@ const Layout = ({ children }: LayoutProps) => {
                   {item.icon}
                   <span>{item.label}</span>
                 </Link>
+              </li>
+            ))}
+            
+            {/* Categories with sub-items */}
+            {categories.map((category) => (
+              <li key={category.label} className="mt-6">
+                <button
+                  onClick={() => toggleCategory(category.label)}
+                  className={cn(
+                    "flex items-center justify-between w-full px-4 py-2 text-left rounded-lg",
+                    isCategoryActive(category) ? "text-primary font-medium" : "text-gray-700",
+                    "hover:bg-gray-100 transition-colors"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    {category.icon}
+                    <span className="font-medium">{category.label}</span>
+                  </div>
+                  {expandedCategories.includes(category.label) ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </button>
+                
+                {expandedCategories.includes(category.label) && (
+                  <ul className="mt-2 ml-4 space-y-1">
+                    {category.items.map((item) => (
+                      <li key={item.path}>
+                        <Link
+                          to={item.path}
+                          className={cn(
+                            "flex items-center gap-3 pl-6 pr-4 py-2 rounded-lg text-gray-700 hover:bg-secondary transition-all-200",
+                            location.pathname === item.path ? "bg-primary text-white hover:bg-primary/90" : ""
+                          )}
+                        >
+                          {item.icon}
+                          <span>{item.label}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             ))}
           </ul>
@@ -86,7 +165,8 @@ const Layout = ({ children }: LayoutProps) => {
               onClick={(e) => e.stopPropagation()}
             >
               <ul className="py-2">
-                {navigationItems.map((item) => (
+                {/* Main navigation items */}
+                {mainItems.map((item) => (
                   <li key={item.path}>
                     <Link
                       to={item.path}
@@ -98,6 +178,49 @@ const Layout = ({ children }: LayoutProps) => {
                       {item.icon}
                       <span>{item.label}</span>
                     </Link>
+                  </li>
+                ))}
+                
+                {/* Categories with sub-items */}
+                {categories.map((category) => (
+                  <li key={category.label} className="mt-2">
+                    <button
+                      onClick={() => toggleCategory(category.label)}
+                      className={cn(
+                        "flex items-center justify-between w-full px-6 py-3 text-left",
+                        isCategoryActive(category) ? "text-primary font-medium" : "text-gray-700",
+                        "hover:bg-gray-100 transition-colors"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        {category.icon}
+                        <span className="font-medium">{category.label}</span>
+                      </div>
+                      {expandedCategories.includes(category.label) ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </button>
+                    
+                    {expandedCategories.includes(category.label) && (
+                      <ul className="border-l-2 border-gray-100 ml-10 pl-2">
+                        {category.items.map((item) => (
+                          <li key={item.path}>
+                            <Link
+                              to={item.path}
+                              className={cn(
+                                "flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-gray-100 transition-all-200",
+                                location.pathname === item.path ? "bg-primary/10 text-primary" : ""
+                              )}
+                            >
+                              {item.icon}
+                              <span>{item.label}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
