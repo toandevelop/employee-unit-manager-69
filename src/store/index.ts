@@ -210,7 +210,31 @@ export const useAppStore = create<AppState>()(
         },
       }),
       {
-        name: 'employee-management-storage'
+        name: 'employee-management-storage',
+        // Xác định rõ ràng những gì cần lưu
+        partialize: (state) => ({
+          employees: state.employees,
+          departments: state.departments,
+          positions: state.positions,
+          departmentEmployees: state.departmentEmployees,
+          positionEmployees: state.positionEmployees,
+        }),
+        // Đặt version để kiểm soát cấu trúc dữ liệu
+        version: 1,
+        // Sử dụng localStorage để lưu trữ vĩnh viễn
+        storage: {
+          getItem: (name) => {
+            const str = localStorage.getItem(name);
+            if (!str) return null;
+            return JSON.parse(str);
+          },
+          setItem: (name, value) => {
+            localStorage.setItem(name, JSON.stringify(value));
+          },
+          removeItem: (name) => {
+            localStorage.removeItem(name);
+          },
+        },
       }
     )
   )
