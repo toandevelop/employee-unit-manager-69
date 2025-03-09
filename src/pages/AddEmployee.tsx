@@ -10,13 +10,9 @@ import EmployeeForm from '@/components/employee/EmployeeForm';
 
 const AddEmployeePage = () => {
   const navigate = useNavigate();
-  const { 
-    departments, 
-    positions, 
-    academicDegrees,
-    academicTitles,
-    addEmployee
-  } = useAppStore();
+  
+  // Get data and functions from the store
+  const { addEmployee } = useAppStore();
   
   // Handle adding a new employee
   const handleAddEmployee = (formData) => {
