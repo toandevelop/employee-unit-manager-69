@@ -40,7 +40,8 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   const mainItems: NavigationItem[] = [
-    { path: '/', label: 'Quản lý nhân viên', icon: <Users className="h-5 w-5" /> },
+    { path: '/', label: 'Tổng quan', icon: <LayoutDashboard className="h-5 w-5" /> },
+    { path: '/employees', label: 'Quản lý nhân viên', icon: <Users className="h-5 w-5" /> },
     { path: '/contracts', label: 'Quản lý hợp đồng', icon: <FileText className="h-5 w-5" /> },
   ];
   
