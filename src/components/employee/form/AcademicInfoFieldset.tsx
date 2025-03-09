@@ -36,14 +36,14 @@ export const AcademicInfoFieldset = ({ formData, handleInputChange }: AcademicIn
       <div className="space-y-2">
         <Label htmlFor="academicTitle">Học hàm</Label>
         <Select
-          value={formData.academicTitleId || ""}
-          onValueChange={(value) => handleInputChange('academicTitleId', value === "" ? undefined : value)}
+          value={formData.academicTitleId || "none"}
+          onValueChange={(value) => handleInputChange('academicTitleId', value === "none" ? undefined : value)}
         >
           <SelectTrigger id="academicTitle">
             <SelectValue placeholder="Chọn học hàm (nếu có)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Không có học hàm</SelectItem>
+            <SelectItem value="none">Không có học hàm</SelectItem>
             {academicTitles.map((title) => (
               <SelectItem key={title.id} value={title.id}>
                 {title.shortName} - {title.name}
