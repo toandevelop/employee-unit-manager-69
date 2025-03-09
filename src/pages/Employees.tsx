@@ -1,8 +1,8 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useAppStore } from '@/store';
 import { Employee } from '@/types';
 import EmployeeSearch from '@/components/employee/EmployeeSearch';
@@ -11,13 +11,9 @@ import EmployeeFormDialog from '@/components/employee/EmployeeFormDialog';
 import { motion } from 'framer-motion';
 
 const EmployeesPage = () => {
+  const navigate = useNavigate();
   const { 
     employees, 
-    departments, 
-    positions, 
-    academicDegrees,
-    academicTitles,
-    addEmployee,
     updateEmployee,
     deleteEmployee
   } = useAppStore();
@@ -48,7 +44,6 @@ const EmployeesPage = () => {
   });
   
   const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   // Filter employees based on search query
@@ -71,13 +66,6 @@ const EmployeesPage = () => {
       academicDegreeId: undefined,
       academicTitleId: undefined
     });
-  };
-  
-  // Handle adding a new employee
-  const handleAddEmployee = () => {
-    addEmployee(formData);
-    setIsAddDialogOpen(false);
-    resetFormData();
   };
   
   // Set up form for editing
@@ -117,14 +105,10 @@ const EmployeesPage = () => {
     }
   };
   
-  // Handle cancel edit/add
+  // Handle cancel edit
   const handleCancel = () => {
-    if (isEditDialogOpen) {
-      setIsEditDialogOpen(false);
-      setEditingEmployee(null);
-    } else {
-      setIsAddDialogOpen(false);
-    }
+    setIsEditDialogOpen(false);
+    setEditingEmployee(null);
     resetFormData();
   };
   
@@ -142,28 +126,13 @@ const EmployeesPage = () => {
           <p className="text-muted-foreground mt-1">Quản lý thông tin nhân viên trong công ty</p>
         </div>
         
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex gap-2 shadow-md hover:shadow-lg transition-all">
-              <Plus className="h-4 w-4" />
-              <span>Thêm nhân viên</span>
-            </Button>
-          </DialogTrigger>
-          
-          <EmployeeFormDialog
-            isOpen={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
-            formData={formData}
-            setFormData={setFormData}
-            departments={departments}
-            positions={positions}
-            academicDegrees={academicDegrees}
-            academicTitles={academicTitles}
-            onSubmit={handleAddEmployee}
-            isEditing={false}
-            onCancel={handleCancel}
-          />
-        </Dialog>
+        <Button 
+          className="flex gap-2 shadow-md hover:shadow-lg transition-all"
+          onClick={() => navigate('/employees/add')}
+        >
+          <Plus className="h-4 w-4" />
+          <span>Thêm nhân viên</span>
+        </Button>
       </div>
       
       <EmployeeSearch 
@@ -183,10 +152,10 @@ const EmployeesPage = () => {
         onOpenChange={setIsEditDialogOpen}
         formData={formData}
         setFormData={setFormData}
-        departments={departments}
-        positions={positions}
-        academicDegrees={academicDegrees}
-        academicTitles={academicTitles}
+        departments={[]}
+        positions={[]}
+        academicDegrees={[]}
+        academicTitles={[]}
         onSubmit={handleUpdateEmployee}
         isEditing={true}
         onCancel={handleCancel}

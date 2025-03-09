@@ -8,6 +8,7 @@ import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import EmployeesPage from "./pages/Employees";
+import AddEmployeePage from "./pages/AddEmployee";
 import DepartmentsPage from "./pages/Departments";
 import PositionsPage from "./pages/Positions";
 import ContractsPage from "./pages/Contracts";
@@ -31,6 +32,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/employees" element={<EmployeesPage />} />
+              <Route path="/employees/add" element={<AddEmployeePage />} />
               <Route path="/departments" element={<DepartmentsPage />} />
               <Route path="/positions" element={<PositionsPage />} />
               <Route path="/contracts" element={<ContractsPage />} />
