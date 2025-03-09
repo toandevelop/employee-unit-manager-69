@@ -81,9 +81,11 @@ const EmployeesPage = () => {
   
   // Set up form for editing
   const handleEditClick = (employee: Employee) => {
+    // Get department IDs for this employee
     const departmentIds = employee.departmentEmployees
       .map(de => de.departmentId);
     
+    // Get position IDs for this employee
     const positionIds = employee.positionEmployees
       .map(pe => pe.positionId);
     

@@ -22,8 +22,8 @@ interface EmployeeCardProps {
   employee: Employee;
   employeeDepartments: Department[];
   employeePositions: Position[];
-  academicDegree: string;  // Changed from string | null
-  academicTitle: string;   // Changed from string | null
+  academicDegree: string;
+  academicTitle: string;
   onEditClick: (employee: Employee) => void;
   onDeleteClick: (id: string) => void;
 }

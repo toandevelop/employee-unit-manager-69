@@ -26,7 +26,9 @@ export const createEmployeeSlice = (
   
   addEmployee: (employeeData) => {
     set((state: any) => {
-      const newId = (Math.max(...state.employees.map(e => parseInt(e.id))) + 1).toString();
+      // Generate a new ID for the employee
+      const newId = (Math.max(0, ...state.employees.map(e => parseInt(e.id))) + 1).toString();
+      
       const { departmentIds, positionIds, ...employeeFields } = employeeData;
       
       const newEmployee: Employee = {
@@ -36,8 +38,12 @@ export const createEmployeeSlice = (
         positionEmployees: []
       };
       
+      // Create department-employee relationships
       const newDepartmentEmployees = departmentIds.map((deptId, index) => {
-        const newDepartmentEmployeeId = (Math.max(...state.departmentEmployees.map(de => parseInt(de.id))) + index + 1).toString();
+        const maxId = state.departmentEmployees.length > 0 
+          ? Math.max(...state.departmentEmployees.map(de => parseInt(de.id)))
+          : 0;
+        const newDepartmentEmployeeId = (maxId + index + 1).toString();
         return {
           id: newDepartmentEmployeeId,
           employeeId: newId,
@@ -45,8 +51,12 @@ export const createEmployeeSlice = (
         };
       });
       
+      // Create position-employee relationships
       const newPositionEmployees = positionIds.map((posId, index) => {
-        const newPositionEmployeeId = (Math.max(...state.positionEmployees.map(pe => parseInt(pe.id))) + index + 1).toString();
+        const maxId = state.positionEmployees.length > 0
+          ? Math.max(...state.positionEmployees.map(pe => parseInt(pe.id)))
+          : 0;
+        const newPositionEmployeeId = (maxId + index + 1).toString();
         return {
           id: newPositionEmployeeId,
           employeeId: newId,
@@ -68,6 +78,7 @@ export const createEmployeeSlice = (
     set((state: any) => {
       const { departmentIds, positionIds, ...employeeFields } = employeeData;
       
+      // Update employee data
       const updatedEmployees = state.employees.map(emp => 
         emp.id === id ? { ...emp, ...employeeFields } : emp
       );
@@ -75,11 +86,15 @@ export const createEmployeeSlice = (
       let updatedDepartmentEmployees = [...state.departmentEmployees];
       let updatedPositionEmployees = [...state.positionEmployees];
       
+      // Update department relationships if provided
       if (departmentIds) {
+        // Remove existing relationships
         updatedDepartmentEmployees = updatedDepartmentEmployees.filter(de => de.employeeId !== id);
         
+        // Create new relationships
         const newDepartmentEmployees = departmentIds.map((deptId, index) => {
-          const newId = (Math.max(...state.departmentEmployees.map(de => parseInt(de.id))) + index + 1).toString();
+          const maxId = Math.max(0, ...state.departmentEmployees.map(de => parseInt(de.id)));
+          const newId = (maxId + index + 1).toString();
           return {
             id: newId,
             employeeId: id,
@@ -90,11 +105,15 @@ export const createEmployeeSlice = (
         updatedDepartmentEmployees = [...updatedDepartmentEmployees, ...newDepartmentEmployees];
       }
       
+      // Update position relationships if provided
       if (positionIds) {
+        // Remove existing relationships
         updatedPositionEmployees = updatedPositionEmployees.filter(pe => pe.employeeId !== id);
         
+        // Create new relationships
         const newPositionEmployees = positionIds.map((posId, index) => {
-          const newId = (Math.max(...state.positionEmployees.map(pe => parseInt(pe.id))) + index + 1).toString();
+          const maxId = Math.max(0, ...state.positionEmployees.map(pe => parseInt(pe.id)));
+          const newId = (maxId + index + 1).toString();
           return {
             id: newId,
             employeeId: id,

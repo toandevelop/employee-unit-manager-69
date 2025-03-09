@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -49,6 +49,11 @@ const EmployeeFormDialog = ({
   onCancel
 }: EmployeeFormDialogProps) => {
   
+  // Handle form input change
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+  
   // Handle department checkbox change
   const handleDepartmentChange = (departmentId: string, checked: boolean) => {
     setFormData(prev => {
@@ -69,6 +74,29 @@ const EmployeeFormDialog = ({
         return { ...prev, positionIds: prev.positionIds.filter(id => id !== positionId) };
       }
     });
+  };
+
+  // Validate form before submission
+  const validateForm = () => {
+    if (!formData.code || !formData.name || !formData.address || 
+        !formData.phone || !formData.identityCard || !formData.contractDate) {
+      return false;
+    }
+    
+    if (formData.departmentIds.length === 0 || formData.positionIds.length === 0) {
+      return false;
+    }
+    
+    return true;
+  };
+  
+  // Handle form submission
+  const handleSubmit = () => {
+    if (!validateForm()) {
+      alert("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+    onSubmit();
   };
 
   return (
@@ -93,7 +121,7 @@ const EmployeeFormDialog = ({
               <Input
                 id="code"
                 value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                onChange={(e) => handleInputChange('code', e.target.value)}
                 placeholder="VD: NV001"
               />
             </div>
@@ -103,7 +131,7 @@ const EmployeeFormDialog = ({
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => handleInputChange('name', e.target.value)}
                 placeholder="VD: Nguyễn Văn A"
               />
             </div>
@@ -114,7 +142,7 @@ const EmployeeFormDialog = ({
             <Input
               id="address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) => handleInputChange('address', e.target.value)}
               placeholder="VD: Số 1, Đường ABC, Quận XYZ, TP. Hà Nội"
             />
           </div>
@@ -125,7 +153,7 @@ const EmployeeFormDialog = ({
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="VD: 0901234567"
               />
             </div>
@@ -135,7 +163,7 @@ const EmployeeFormDialog = ({
               <Input
                 id="identityCard"
                 value={formData.identityCard}
-                onChange={(e) => setFormData({ ...formData, identityCard: e.target.value })}
+                onChange={(e) => handleInputChange('identityCard', e.target.value)}
                 placeholder="VD: 001201012345"
               />
             </div>
@@ -147,7 +175,7 @@ const EmployeeFormDialog = ({
               id="contractDate"
               type="date"
               value={formData.contractDate}
-              onChange={(e) => setFormData({ ...formData, contractDate: e.target.value })}
+              onChange={(e) => handleInputChange('contractDate', e.target.value)}
             />
           </div>
           
@@ -155,8 +183,8 @@ const EmployeeFormDialog = ({
             <div className="space-y-2">
               <Label htmlFor="academicDegree">Học vị</Label>
               <Select
-                value={formData.academicDegreeId}
-                onValueChange={(value) => setFormData({ ...formData, academicDegreeId: value })}
+                value={formData.academicDegreeId || ""}
+                onValueChange={(value) => handleInputChange('academicDegreeId', value)}
               >
                 <SelectTrigger id="academicDegree">
                   <SelectValue placeholder="Chọn học vị" />
@@ -175,7 +203,7 @@ const EmployeeFormDialog = ({
               <Label htmlFor="academicTitle">Học hàm</Label>
               <Select
                 value={formData.academicTitleId || ""}
-                onValueChange={(value) => setFormData({ ...formData, academicTitleId: value || undefined })}
+                onValueChange={(value) => handleInputChange('academicTitleId', value === "" ? undefined : value)}
               >
                 <SelectTrigger id="academicTitle">
                   <SelectValue placeholder="Chọn học hàm (nếu có)" />
@@ -237,7 +265,7 @@ const EmployeeFormDialog = ({
           <Button variant="outline" onClick={onCancel}>
             Hủy
           </Button>
-          <Button onClick={onSubmit}>
+          <Button onClick={handleSubmit}>
             {isEditing ? 'Lưu thay đổi' : 'Thêm nhân viên'}
           </Button>
         </DialogFooter>
