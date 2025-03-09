@@ -4,7 +4,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 
 interface FormActionsProps {
   onCancel: () => void;
-  onSubmit?: () => void;
+  onSubmit?: (data?: any) => void;
   isSubmitting?: boolean;
 }
 
@@ -15,7 +15,7 @@ export const FormActions = ({ onCancel, onSubmit, isSubmitting }: FormActionsPro
         Hủy
       </Button>
       {onSubmit ? (
-        <Button type="button" onClick={onSubmit} disabled={isSubmitting}>
+        <Button type="button" onClick={() => onSubmit()} disabled={isSubmitting}>
           {isSubmitting ? "Đang lưu..." : "Lưu"}
         </Button>
       ) : (

@@ -8,44 +8,18 @@ import { Employee } from '@/types';
 import EmployeeSearch from '@/components/employee/EmployeeSearch';
 import EmployeeList from '@/components/employee/EmployeeList';
 import EmployeeFormDialog from '@/components/employee/EmployeeFormDialog';
+import { EmployeeFormValues } from '@/components/employee/form/types';
+import { toast } from 'sonner';
 
 const EmployeesPage = () => {
   const { 
     employees, 
-    departments, 
-    positions, 
-    academicDegrees,
-    academicTitles,
     addEmployee,
     updateEmployee,
     deleteEmployee
   } = useAppStore();
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [formData, setFormData] = useState<{
-    code: string;
-    name: string;
-    address: string;
-    phone: string;
-    identityCard: string;
-    contractDate: string;
-    departmentIds: string[];
-    positionIds: string[];
-    academicDegreeId?: string;
-    academicTitleId?: string;
-  }>({
-    code: '',
-    name: '',
-    address: '',
-    phone: '',
-    identityCard: '',
-    contractDate: '',
-    departmentIds: [],
-    positionIds: [],
-    academicDegreeId: undefined,
-    academicTitleId: undefined
-  });
-  
   const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -56,75 +30,37 @@ const EmployeesPage = () => {
     employee.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  // Reset form data
-  const resetFormData = () => {
-    setFormData({
-      code: '',
-      name: '',
-      address: '',
-      phone: '',
-      identityCard: '',
-      contractDate: '',
-      departmentIds: [],
-      positionIds: [],
-      academicDegreeId: undefined,
-      academicTitleId: undefined
-    });
-  };
-  
   // Handle adding a new employee
-  const handleAddEmployee = () => {
+  const handleAddEmployee = (formData: EmployeeFormValues) => {
     addEmployee(formData);
     setIsAddDialogOpen(false);
-    resetFormData();
+    toast.success("Thêm nhân viên thành công");
   };
   
   // Set up form for editing
   const handleEditClick = (employee: Employee) => {
-    // Get department IDs for this employee
-    const departmentIds = employee.departmentEmployees
-      .map(de => de.departmentId);
-    
-    // Get position IDs for this employee
-    const positionIds = employee.positionEmployees
-      .map(pe => pe.positionId);
-    
-    setFormData({
-      code: employee.code,
-      name: employee.name,
-      address: employee.address,
-      phone: employee.phone,
-      identityCard: employee.identityCard,
-      contractDate: employee.contractDate,
-      departmentIds,
-      positionIds,
-      academicDegreeId: employee.academicDegreeId,
-      academicTitleId: employee.academicTitleId
-    });
-    
     setEditingEmployee(employee.id);
     setIsEditDialogOpen(true);
   };
   
   // Handle updating an employee
-  const handleUpdateEmployee = () => {
+  const handleUpdateEmployee = (formData: EmployeeFormValues) => {
     if (editingEmployee) {
       updateEmployee(editingEmployee, formData);
       setIsEditDialogOpen(false);
       setEditingEmployee(null);
-      resetFormData();
+      toast.success("Cập nhật thông tin nhân viên thành công");
     }
   };
   
   // Handle cancel edit/add
-  const handleCancel = () => {
-    if (isEditDialogOpen) {
-      setIsEditDialogOpen(false);
-      setEditingEmployee(null);
-    } else {
-      setIsAddDialogOpen(false);
-    }
-    resetFormData();
+  const handleCancelAdd = () => {
+    setIsAddDialogOpen(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditDialogOpen(false);
+    setEditingEmployee(null);
   };
   
   return (
@@ -146,15 +82,8 @@ const EmployeesPage = () => {
           <EmployeeFormDialog
             isOpen={isAddDialogOpen}
             onOpenChange={setIsAddDialogOpen}
-            formData={formData}
-            setFormData={setFormData}
-            departments={departments}
-            positions={positions}
-            academicDegrees={academicDegrees}
-            academicTitles={academicTitles}
             onSubmit={handleAddEmployee}
-            isEditing={false}
-            onCancel={handleCancel}
+            onCancel={handleCancelAdd}
           />
         </Dialog>
       </div>
@@ -171,19 +100,15 @@ const EmployeesPage = () => {
       />
       
       {/* Edit Employee Dialog */}
-      <EmployeeFormDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        formData={formData}
-        setFormData={setFormData}
-        departments={departments}
-        positions={positions}
-        academicDegrees={academicDegrees}
-        academicTitles={academicTitles}
-        onSubmit={handleUpdateEmployee}
-        isEditing={true}
-        onCancel={handleCancel}
-      />
+      {editingEmployee && (
+        <EmployeeFormDialog
+          isOpen={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          employee={employees.find(e => e.id === editingEmployee)}
+          onSubmit={handleUpdateEmployee}
+          onCancel={handleCancelEdit}
+        />
+      )}
     </div>
   );
 };

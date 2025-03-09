@@ -62,7 +62,7 @@ export const AcademicFields = ({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="">Không có</SelectItem>
+                <SelectItem value="none">Không có</SelectItem>
                 {academicTitles.map((title) => (
                   <SelectItem key={title.id} value={title.id}>
                     {title.name} ({title.shortName})
