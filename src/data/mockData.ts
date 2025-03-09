@@ -1,3 +1,4 @@
+
 import { Employee, Department, Position, DepartmentEmployee, PositionEmployee } from "../types";
 
 export const positions: Position[] = [
@@ -49,7 +50,9 @@ export const employees: Employee[] = [
     identityCard: "001201012345",
     contractDate: "2020-02-15",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "5", // Tiến sĩ
+    academicTitleId: "1"  // Phó Giáo sư
   },
   {
     id: "2",
@@ -60,7 +63,8 @@ export const employees: Employee[] = [
     identityCard: "079201054321",
     contractDate: "2020-03-20",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "4" // Thạc sĩ
   },
   {
     id: "3",
@@ -71,7 +75,9 @@ export const employees: Employee[] = [
     identityCard: "048201012345",
     contractDate: "2020-04-10",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "5", // Tiến sĩ
+    academicTitleId: "2"  // Giáo sư
   },
   {
     id: "4",
@@ -82,7 +88,8 @@ export const employees: Employee[] = [
     identityCard: "031201087654",
     contractDate: "2020-05-05",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "4" // Thạc sĩ
   },
   {
     id: "5",
@@ -93,7 +100,8 @@ export const employees: Employee[] = [
     identityCard: "092201076543",
     contractDate: "2020-06-15",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "3" // Đại học
   },
   {
     id: "6",
@@ -104,7 +112,8 @@ export const employees: Employee[] = [
     identityCard: "054201065432",
     contractDate: "2020-07-20",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "2" // Cử nhân
   },
   {
     id: "7",
@@ -115,7 +124,8 @@ export const employees: Employee[] = [
     identityCard: "056201054321",
     contractDate: "2020-08-10",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "4" // Thạc sĩ
   },
   {
     id: "8",
@@ -126,7 +136,8 @@ export const employees: Employee[] = [
     identityCard: "077201043210",
     contractDate: "2020-09-05",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "3" // Đại học
   },
   {
     id: "9",
@@ -137,7 +148,8 @@ export const employees: Employee[] = [
     identityCard: "061201032109",
     contractDate: "2020-10-15",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "3" // Đại học
   },
   {
     id: "10",
@@ -148,7 +160,8 @@ export const employees: Employee[] = [
     identityCard: "022201021098",
     contractDate: "2020-11-20",
     departmentEmployees: [],
-    positionEmployees: []
+    positionEmployees: [],
+    academicDegreeId: "2" // Cử nhân
   },
 ];
 

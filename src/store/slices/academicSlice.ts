@@ -57,7 +57,8 @@ export const createAcademicSlice = (
   
   deleteAcademicDegree: (id) => {
     set((state: any) => {
-      const hasEmployees = state.employees.some(emp => emp.academicDegreeId === id);
+      // Check if any employee is using this academic degree
+      const hasEmployees = state.employees && state.employees.some(emp => emp.academicDegreeId === id);
       
       if (hasEmployees) {
         toast.error("Không thể xoá học vị đang có nhân viên");
@@ -105,7 +106,8 @@ export const createAcademicSlice = (
   
   deleteAcademicTitle: (id) => {
     set((state: any) => {
-      const hasEmployees = state.employees.some(emp => emp.academicTitleId === id);
+      // Check if any employee is using this academic title
+      const hasEmployees = state.employees && state.employees.some(emp => emp.academicTitleId === id);
       
       if (hasEmployees) {
         toast.error("Không thể xoá học hàm đang có nhân viên");
