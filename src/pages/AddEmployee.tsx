@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import EmployeeForm from '@/components/employee/EmployeeForm';
 
 const AddEmployeePage = () => {
   const navigate = useNavigate();
@@ -17,51 +18,15 @@ const AddEmployeePage = () => {
     addEmployee
   } = useAppStore();
   
-  const [formData, setFormData] = useState<{
-    code: string;
-    name: string;
-    address: string;
-    phone: string;
-    identityCard: string;
-    contractDate: string;
-    departmentIds: string[];
-    positionIds: string[];
-    academicDegreeId?: string;
-    academicTitleId?: string;
-  }>({
-    code: '',
-    name: '',
-    address: '',
-    phone: '',
-    identityCard: '',
-    contractDate: '',
-    departmentIds: [],
-    positionIds: [],
-    academicDegreeId: undefined,
-    academicTitleId: undefined
-  });
-  
   // Handle adding a new employee
-  const handleAddEmployee = () => {
-    // Validate form
-    if (!formData.code || !formData.name || !formData.address || 
-        !formData.phone || !formData.identityCard || !formData.contractDate) {
-      toast.error("Vui lòng điền đầy đủ thông tin cá nhân");
-      return;
-    }
-    
-    if (formData.departmentIds.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một đơn vị");
-      return;
-    }
-    
-    if (formData.positionIds.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một chức vụ");
-      return;
-    }
-    
+  const handleAddEmployee = (formData) => {
+    // Validation is handled inside the EmployeeForm component
     addEmployee(formData);
     toast.success("Thêm nhân viên thành công");
+    navigate('/employees');
+  };
+  
+  const handleCancel = () => {
     navigate('/employees');
   };
   
@@ -88,22 +53,13 @@ const AddEmployeePage = () => {
       <div className="bg-card border rounded-lg shadow-sm p-6">
         <div className="max-w-4xl mx-auto">
           <EmployeeForm
-            formData={formData}
-            setFormData={setFormData}
-            departments={departments}
-            positions={positions}
-            academicDegrees={academicDegrees}
-            academicTitles={academicTitles}
             onSubmit={handleAddEmployee}
-            submitButtonText="Thêm nhân viên"
+            onCancel={handleCancel}
           />
         </div>
       </div>
     </motion.div>
   );
 };
-
-// Import the EmployeeForm component
-import EmployeeForm from '@/components/employee/EmployeeForm';
 
 export default AddEmployeePage;
