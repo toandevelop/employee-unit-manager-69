@@ -31,16 +31,20 @@ export const createEmployeeSlice = (
       
       const { departmentIds, positionIds, ...employeeFields } = employeeData;
       
+      // Process academicTitleId - convert "none" to undefined
+      const academicTitleId = employeeFields.academicTitleId === "none" ? undefined : employeeFields.academicTitleId;
+      
       const newEmployee: Employee = {
         id: newId,
         ...employeeFields,
+        academicTitleId,
         departmentEmployees: [],
         positionEmployees: []
       };
       
       // Create department-employee relationships
       const newDepartmentEmployees = departmentIds.map((deptId, index) => {
-        const maxId = state.departmentEmployees.length > 0 
+        const maxId = state.departmentEmployees?.length > 0 
           ? Math.max(...state.departmentEmployees.map(de => parseInt(de.id)))
           : 0;
         const newDepartmentEmployeeId = (maxId + index + 1).toString();
@@ -53,7 +57,7 @@ export const createEmployeeSlice = (
       
       // Create position-employee relationships
       const newPositionEmployees = positionIds.map((posId, index) => {
-        const maxId = state.positionEmployees.length > 0
+        const maxId = state.positionEmployees?.length > 0
           ? Math.max(...state.positionEmployees.map(pe => parseInt(pe.id)))
           : 0;
         const newPositionEmployeeId = (maxId + index + 1).toString();
@@ -68,8 +72,8 @@ export const createEmployeeSlice = (
       
       return {
         employees: [...state.employees, newEmployee],
-        departmentEmployees: [...state.departmentEmployees, ...newDepartmentEmployees],
-        positionEmployees: [...state.positionEmployees, ...newPositionEmployees],
+        departmentEmployees: [...(state.departmentEmployees || []), ...newDepartmentEmployees],
+        positionEmployees: [...(state.positionEmployees || []), ...newPositionEmployees],
       };
     });
   },
@@ -78,13 +82,18 @@ export const createEmployeeSlice = (
     set((state: any) => {
       const { departmentIds, positionIds, ...employeeFields } = employeeData;
       
+      // Process academicTitleId - convert "none" to undefined
+      if (employeeFields.academicTitleId === "none") {
+        employeeFields.academicTitleId = undefined;
+      }
+      
       // Update employee data
       const updatedEmployees = state.employees.map(emp => 
         emp.id === id ? { ...emp, ...employeeFields } : emp
       );
       
-      let updatedDepartmentEmployees = [...state.departmentEmployees];
-      let updatedPositionEmployees = [...state.positionEmployees];
+      let updatedDepartmentEmployees = [...(state.departmentEmployees || [])];
+      let updatedPositionEmployees = [...(state.positionEmployees || [])];
       
       // Update department relationships if provided
       if (departmentIds) {
@@ -93,7 +102,9 @@ export const createEmployeeSlice = (
         
         // Create new relationships
         const newDepartmentEmployees = departmentIds.map((deptId, index) => {
-          const maxId = Math.max(0, ...state.departmentEmployees.map(de => parseInt(de.id)));
+          const maxId = updatedDepartmentEmployees.length > 0 
+            ? Math.max(...updatedDepartmentEmployees.map(de => parseInt(de.id)))
+            : 0;
           const newId = (maxId + index + 1).toString();
           return {
             id: newId,
@@ -112,7 +123,9 @@ export const createEmployeeSlice = (
         
         // Create new relationships
         const newPositionEmployees = positionIds.map((posId, index) => {
-          const maxId = Math.max(0, ...state.positionEmployees.map(pe => parseInt(pe.id)));
+          const maxId = updatedPositionEmployees.length > 0 
+            ? Math.max(...updatedPositionEmployees.map(pe => parseInt(pe.id)))
+            : 0;
           const newId = (maxId + index + 1).toString();
           return {
             id: newId,
@@ -140,8 +153,8 @@ export const createEmployeeSlice = (
       
       return {
         employees: state.employees.filter(emp => emp.id !== id),
-        departmentEmployees: state.departmentEmployees.filter(de => de.employeeId !== id),
-        positionEmployees: state.positionEmployees.filter(pe => pe.employeeId !== id)
+        departmentEmployees: (state.departmentEmployees || []).filter(de => de.employeeId !== id),
+        positionEmployees: (state.positionEmployees || []).filter(pe => pe.employeeId !== id)
       };
     });
   },

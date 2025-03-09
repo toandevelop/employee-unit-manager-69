@@ -209,7 +209,8 @@ const EmployeeFormDialog = ({
                   <SelectValue placeholder="Chọn học hàm (nếu có)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Không có học hàm</SelectItem>
+                  {/* Fix: Use a non-empty string value for the "no academic title" option */}
+                  <SelectItem value="none">Không có học hàm</SelectItem>
                   {academicTitles.map((title) => (
                     <SelectItem key={title.id} value={title.id}>
                       {title.shortName} - {title.name}
