@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -9,14 +10,6 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { 
   Dialog, 
   DialogContent, 
@@ -26,39 +19,15 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { useAppStore } from '@/store';
-import { Contract, Employee } from '@/types';
-import { FileText, Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Contract } from '@/types';
+import { FileText, Plus, Pencil, Trash2, Search, Edit } from 'lucide-react';
 
 const ContractsPage = () => {
-  const { contracts, employees, contractTypes, updateContract, deleteContract } = useAppStore();
+  const { contracts, employees, contractTypes, deleteContract } = useAppStore();
   
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentContract, setCurrentContract] = useState<Contract | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const [formData, setFormData] = useState({
-    code: '',
-    employeeId: '',
-    contractTypeId: '',
-    startDate: '',
-    endDate: '',
-    baseSalary: 0,
-    allowance: 0
-  });
-  
-  const resetForm = () => {
-    setFormData({
-      code: '',
-      employeeId: '',
-      contractTypeId: '',
-      startDate: '',
-      endDate: '',
-      baseSalary: 0,
-      allowance: 0
-    });
-    setCurrentContract(null);
-  };
   
   const filteredContracts = useMemo(() => {
     return contracts.filter(contract => {
@@ -92,46 +61,9 @@ const ContractsPage = () => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
   
-  const handleOpenEditDialog = (contract: Contract) => {
-    setCurrentContract(contract);
-    setFormData({
-      code: contract.code,
-      employeeId: contract.employeeId,
-      contractTypeId: contract.contractTypeId,
-      startDate: contract.startDate,
-      endDate: contract.endDate,
-      baseSalary: contract.baseSalary,
-      allowance: contract.allowance
-    });
-    setIsEditDialogOpen(true);
-  };
-  
   const handleOpenDeleteDialog = (contract: Contract) => {
     setCurrentContract(contract);
     setIsDeleteDialogOpen(true);
-  };
-  
-  const handleUpdateContract = () => {
-    if (!currentContract) return;
-    if (
-      formData.code.trim() === '' ||
-      formData.employeeId === '' ||
-      formData.contractTypeId === '' ||
-      formData.startDate === ''
-    ) return;
-    
-    updateContract(currentContract.id, {
-      code: formData.code,
-      employeeId: formData.employeeId,
-      contractTypeId: formData.contractTypeId,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      baseSalary: Number(formData.baseSalary),
-      allowance: Number(formData.allowance)
-    });
-    
-    resetForm();
-    setIsEditDialogOpen(false);
   };
   
   const handleDeleteContract = () => {
@@ -139,31 +71,8 @@ const ContractsPage = () => {
     
     deleteContract(currentContract.id);
     
-    resetForm();
+    setCurrentContract(null);
     setIsDeleteDialogOpen(false);
-  };
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    if (name === 'baseSalary' || name === 'allowance') {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value === '' ? 0 : Number(value)
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
-  
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
   };
   
   return (
@@ -215,9 +124,11 @@ const ContractsPage = () => {
                 <Button 
                   variant="secondary" 
                   size="sm" 
-                  onClick={() => handleOpenEditDialog(contract)}
+                  asChild
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Link to={`/contracts/edit/${contract.id}`}>
+                    <Edit className="h-4 w-4" />
+                  </Link>
                 </Button>
                 <Button 
                   variant="destructive" 
@@ -264,132 +175,6 @@ const ContractsPage = () => {
           </div>
         )}
       </div>
-      
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Sửa thông tin hợp đồng</DialogTitle>
-            <DialogDescription>
-              Cập nhật thông tin hợp đồng
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-code">Mã hợp đồng</Label>
-                <Input
-                  id="edit-code"
-                  name="code"
-                  value={formData.code}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit-employeeId">Nhân viên</Label>
-                <Select 
-                  value={formData.employeeId}
-                  onValueChange={(value) => handleSelectChange('employeeId', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn nhân viên" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employees.map((employee) => (
-                      <SelectItem key={employee.id} value={employee.id}>
-                        {employee.code} - {employee.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-contractTypeId">Loại hợp đồng</Label>
-                <Select 
-                  value={formData.contractTypeId}
-                  onValueChange={(value) => handleSelectChange('contractTypeId', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại hợp đồng" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contractTypes.map((contractType) => (
-                      <SelectItem key={contractType.id} value={contractType.id}>
-                        {contractType.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-startDate">Ngày bắt đầu</Label>
-                <Input
-                  id="edit-startDate"
-                  name="startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit-endDate">Ngày kết thúc</Label>
-                <Input
-                  id="edit-endDate"
-                  name="endDate"
-                  type="date"
-                  value={formData.endDate}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-baseSalary">Lương cơ bản (VNĐ)</Label>
-                <Input
-                  id="edit-baseSalary"
-                  name="baseSalary"
-                  type="number"
-                  value={formData.baseSalary || ''}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit-allowance">Phụ cấp (VNĐ)</Label>
-                <Input
-                  id="edit-allowance"
-                  name="allowance"
-                  type="number"
-                  value={formData.allowance || ''}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            
-            <div className="mt-2">
-              <Label>Tổng lương:</Label>
-              <p className="text-lg font-semibold text-primary">
-                {formatCurrency(calculateTotalSalary(Number(formData.baseSalary), Number(formData.allowance)))}
-              </p>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Huỷ</Button>
-            <Button onClick={handleUpdateContract}>Cập nhật</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       
       {/* Delete Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

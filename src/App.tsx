@@ -11,6 +11,7 @@ import DepartmentsPage from "./pages/Departments";
 import PositionsPage from "./pages/Positions";
 import ContractsPage from "./pages/Contracts";
 import AddContractPage from "./pages/AddContract";
+import EditContractPage from "./pages/EditContract";
 import ContractTypesPage from "./pages/ContractTypes";
 import AcademicDegreesPage from "./pages/AcademicDegrees";
 import AcademicTitlesPage from "./pages/AcademicTitles";
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/positions" element={<PositionsPage />} />
               <Route path="/contracts" element={<ContractsPage />} />
               <Route path="/contracts/add" element={<AddContractPage />} />
+              <Route path="/contracts/edit/:id" element={<EditContractPage />} />
               <Route path="/contract-types" element={<ContractTypesPage />} />
               <Route path="/academic-degrees" element={<AcademicDegreesPage />} />
               <Route path="/academic-titles" element={<AcademicTitlesPage />} />
