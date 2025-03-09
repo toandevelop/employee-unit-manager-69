@@ -10,6 +10,7 @@ import EmployeeList from '@/components/employee/EmployeeList';
 import EmployeeFormDialog from '@/components/employee/EmployeeFormDialog';
 import { motion } from 'framer-motion';
 import { EmployeeFormValues } from '@/components/employee/form/types';
+import { toast } from 'sonner';
 
 const EmployeesPage = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const EmployeesPage = () => {
       updateEmployee(editingEmployee, formData);
       setIsEditDialogOpen(false);
       setEditingEmployee(null);
+      toast.success("Cập nhật thông tin nhân viên thành công");
     }
   };
   
