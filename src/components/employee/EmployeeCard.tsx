@@ -22,8 +22,8 @@ interface EmployeeCardProps {
   employee: Employee;
   employeeDepartments: Department[];
   employeePositions: Position[];
-  academicDegree: string | null;
-  academicTitle: string | null;
+  academicDegree: string;  // Changed from string | null
+  academicTitle: string;   // Changed from string | null
   onEditClick: (employee: Employee) => void;
   onDeleteClick: (id: string) => void;
 }
@@ -99,11 +99,15 @@ const EmployeeCard = ({
               <div>
                 <span className="font-medium">Chức vụ:</span>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {employeePositions.map(position => (
-                    <Badge key={position.id} variant="secondary">
-                      {position.name}
-                    </Badge>
-                  ))}
+                  {employeePositions.length > 0 ? (
+                    employeePositions.map(position => (
+                      <Badge key={position.id} variant="secondary">
+                        {position.name}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-muted-foreground">Chưa cập nhật</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -113,11 +117,15 @@ const EmployeeCard = ({
               <div>
                 <span className="font-medium">Đơn vị:</span>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {employeeDepartments.map(department => (
-                    <Badge key={department.id} variant="outline">
-                      {department.name}
-                    </Badge>
-                  ))}
+                  {employeeDepartments.length > 0 ? (
+                    employeeDepartments.map(department => (
+                      <Badge key={department.id} variant="outline">
+                        {department.name}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-muted-foreground">Chưa cập nhật</span>
+                  )}
                 </div>
               </div>
             </div>

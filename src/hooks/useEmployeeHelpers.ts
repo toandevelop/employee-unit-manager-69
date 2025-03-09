@@ -32,16 +32,16 @@ export const useEmployeeHelpers = () => {
   
   // Helper function to get academic degree name by id
   const getAcademicDegreeName = (id?: string) => {
-    if (!id) return null;
+    if (!id) return "";
     const degree = academicDegrees.find(d => d.id === id);
-    return degree ? `${degree.shortName} (${degree.name})` : null;
+    return degree ? `${degree.shortName} (${degree.name})` : "";
   };
   
   // Helper function to get academic title name by id
   const getAcademicTitleName = (id?: string) => {
-    if (!id) return null;
+    if (!id) return "";
     const title = academicTitles.find(t => t.id === id);
-    return title ? `${title.shortName} (${title.name})` : null;
+    return title ? `${title.shortName} (${title.name})` : "";
   };
 
   return {
