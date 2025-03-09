@@ -9,6 +9,7 @@ import EmployeeSearch from '@/components/employee/EmployeeSearch';
 import EmployeeList from '@/components/employee/EmployeeList';
 import EmployeeFormDialog from '@/components/employee/EmployeeFormDialog';
 import { motion } from 'framer-motion';
+import { EmployeeFormValues } from '@/components/employee/form/types';
 
 const EmployeesPage = () => {
   const navigate = useNavigate();
@@ -19,30 +20,6 @@ const EmployeesPage = () => {
   } = useAppStore();
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [formData, setFormData] = useState<{
-    code: string;
-    name: string;
-    address: string;
-    phone: string;
-    identityCard: string;
-    contractDate: string;
-    departmentIds: string[];
-    positionIds: string[];
-    academicDegreeId?: string;
-    academicTitleId?: string;
-  }>({
-    code: '',
-    name: '',
-    address: '',
-    phone: '',
-    identityCard: '',
-    contractDate: '',
-    departmentIds: [],
-    positionIds: [],
-    academicDegreeId: undefined,
-    academicTitleId: undefined
-  });
-  
   const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
@@ -52,56 +29,18 @@ const EmployeesPage = () => {
     employee.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  // Reset form data
-  const resetFormData = () => {
-    setFormData({
-      code: '',
-      name: '',
-      address: '',
-      phone: '',
-      identityCard: '',
-      contractDate: '',
-      departmentIds: [],
-      positionIds: [],
-      academicDegreeId: undefined,
-      academicTitleId: undefined
-    });
-  };
-  
   // Set up form for editing
   const handleEditClick = (employee: Employee) => {
-    // Get department IDs for this employee
-    const departmentIds = employee.departmentEmployees
-      .map(de => de.departmentId);
-    
-    // Get position IDs for this employee
-    const positionIds = employee.positionEmployees
-      .map(pe => pe.positionId);
-    
-    setFormData({
-      code: employee.code,
-      name: employee.name,
-      address: employee.address,
-      phone: employee.phone,
-      identityCard: employee.identityCard,
-      contractDate: employee.contractDate,
-      departmentIds,
-      positionIds,
-      academicDegreeId: employee.academicDegreeId,
-      academicTitleId: employee.academicTitleId
-    });
-    
     setEditingEmployee(employee.id);
     setIsEditDialogOpen(true);
   };
   
   // Handle updating an employee
-  const handleUpdateEmployee = () => {
+  const handleUpdateEmployee = (formData: EmployeeFormValues) => {
     if (editingEmployee) {
       updateEmployee(editingEmployee, formData);
       setIsEditDialogOpen(false);
       setEditingEmployee(null);
-      resetFormData();
     }
   };
   
@@ -109,7 +48,6 @@ const EmployeesPage = () => {
   const handleCancel = () => {
     setIsEditDialogOpen(false);
     setEditingEmployee(null);
-    resetFormData();
   };
   
   return (
@@ -147,19 +85,15 @@ const EmployeesPage = () => {
       />
       
       {/* Edit Employee Dialog */}
-      <EmployeeFormDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        formData={formData}
-        setFormData={setFormData}
-        departments={[]}
-        positions={[]}
-        academicDegrees={[]}
-        academicTitles={[]}
-        onSubmit={handleUpdateEmployee}
-        isEditing={true}
-        onCancel={handleCancel}
-      />
+      {editingEmployee && (
+        <EmployeeFormDialog
+          isOpen={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          employee={employees.find(e => e.id === editingEmployee)}
+          onSubmit={handleUpdateEmployee}
+          onCancel={handleCancel}
+        />
+      )}
     </motion.div>
   );
 };

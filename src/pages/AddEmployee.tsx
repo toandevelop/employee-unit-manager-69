@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store';
 import { motion } from 'framer-motion';
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import EmployeeForm from '@/components/employee/EmployeeForm';
+import { EmployeeFormValues } from '@/components/employee/form/types';
 
 const AddEmployeePage = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const AddEmployeePage = () => {
   const { addEmployee } = useAppStore();
   
   // Handle adding a new employee
-  const handleAddEmployee = (formData) => {
+  const handleAddEmployee = (formData: EmployeeFormValues) => {
     // Validation is handled inside the EmployeeForm component
     addEmployee(formData);
     toast.success("Thêm nhân viên thành công");
