@@ -1,32 +1,20 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Employee, Department, Position, AcademicDegree, AcademicTitle } from '@/types';
+import { Employee } from '@/types';
 import { EmployeeFormValues } from './form/types';
 import { useAppStore } from '@/store';
-
-interface EmployeeFormData {
-  code: string;
-  name: string;
-  address: string;
-  phone: string;
-  identityCard: string;
-  contractDate: string;
-  departmentIds: string[];
-  positionIds: string[];
-  academicDegreeId?: string;
-  academicTitleId?: string;
-}
+import { FormActions } from './form/FormActions';
 
 interface EmployeeFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   employee?: Employee;
-  onSubmit: (formData: EmployeeFormValues) => void; // Updated to accept formData parameter
+  onSubmit: (formData: EmployeeFormValues) => void;
   onCancel: () => void;
 }
 
@@ -38,7 +26,7 @@ const EmployeeFormDialog = ({
   onCancel
 }: EmployeeFormDialogProps) => {
   // Initialize formData from employee or with default values
-  const [formData, setFormData] = useState<EmployeeFormData>({
+  const [formData, setFormData] = useState<EmployeeFormValues>({
     code: employee?.code || '',
     name: employee?.name || '',
     address: employee?.address || '',
@@ -48,7 +36,7 @@ const EmployeeFormDialog = ({
     departmentIds: employee?.departmentEmployees?.map(de => de.departmentId) || [],
     positionIds: employee?.positionEmployees?.map(pe => pe.positionId) || [],
     academicDegreeId: employee?.academicDegreeId || '',
-    academicTitleId: employee?.academicTitleId || ''
+    academicTitleId: employee?.academicTitleId || undefined
   });
 
   // Use the store to get departments, positions, etc.
@@ -84,6 +72,12 @@ const EmployeeFormDialog = ({
   // State for filtered departments and positions
   const [filteredDepartments, setFilteredDepartments] = useState(departments);
   const [filteredPositions, setFilteredPositions] = useState(positions);
+
+  // Update filtered departments and positions when the source data changes
+  useEffect(() => {
+    setFilteredDepartments(departments);
+    setFilteredPositions(positions);
+  }, [departments, positions]);
 
   // Handle department search
   const handleDepartmentSearch = (query: string) => {
@@ -223,7 +217,7 @@ const EmployeeFormDialog = ({
                 <SelectTrigger id="academicDegree">
                   <SelectValue placeholder="Chọn học vị" />
                 </SelectTrigger>
-                <SelectContent searchable>
+                <SelectContent>
                   {academicDegrees.map((degree) => (
                     <SelectItem key={degree.id} value={degree.id}>
                       {degree.shortName} - {degree.name}
@@ -236,14 +230,13 @@ const EmployeeFormDialog = ({
             <div className="space-y-2">
               <Label htmlFor="academicTitle">Học hàm</Label>
               <Select
-                value={formData.academicTitleId || "none"}
-                onValueChange={(value) => handleInputChange('academicTitleId', value === "none" ? undefined : value)}
+                value={formData.academicTitleId || ""}
+                onValueChange={(value) => handleInputChange('academicTitleId', value === "" ? undefined : value)}
               >
                 <SelectTrigger id="academicTitle">
                   <SelectValue placeholder="Chọn học hàm (nếu có)" />
                 </SelectTrigger>
-                <SelectContent searchable>
-                  {/* Fix: Use a non-empty string value for the "no academic title" option */}
+                <SelectContent>
                   <SelectItem value="none">Không có học hàm</SelectItem>
                   {academicTitles.map((title) => (
                     <SelectItem key={title.id} value={title.id}>
@@ -320,14 +313,7 @@ const EmployeeFormDialog = ({
           </div>
         </div>
         
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
-            Hủy
-          </Button>
-          <Button onClick={handleSubmit}>
-            {employee?.id ? 'Lưu thay đổi' : 'Thêm nhân viên'}
-          </Button>
-        </DialogFooter>
+        <FormActions onCancel={onCancel} onSubmit={handleSubmit} />
       </DialogContent>
     </Dialog>
   );
