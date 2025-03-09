@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Users, Building2, Briefcase, FileText, FileType, Menu, X, ChevronDown, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { Users, Building2, Briefcase, FileText, FileType, Menu, X, ChevronDown, ChevronRight, LayoutDashboard, GraduationCap, BookOpen } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -52,6 +52,8 @@ const Layout = ({ children }: LayoutProps) => {
         { path: '/departments', label: 'Quản lý đơn vị', icon: <Building2 className="h-5 w-5" /> },
         { path: '/positions', label: 'Quản lý chức vụ', icon: <Briefcase className="h-5 w-5" /> },
         { path: '/contract-types', label: 'Quản lý loại hợp đồng', icon: <FileType className="h-5 w-5" /> },
+        { path: '/academic-degrees', label: 'Quản lý học vị', icon: <GraduationCap className="h-5 w-5" /> },
+        { path: '/academic-titles', label: 'Quản lý học hàm', icon: <BookOpen className="h-5 w-5" /> },
       ]
     }
   ];

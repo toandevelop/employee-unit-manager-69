@@ -9,6 +9,8 @@ export interface Employee {
   contractDate: string;
   departmentEmployees: DepartmentEmployee[];
   positionEmployees: PositionEmployee[];
+  academicDegreeId?: string;
+  academicTitleId?: string;
 }
 
 export interface Department {
@@ -59,4 +61,20 @@ export interface Contract {
   allowance: number;
   employee?: Employee;
   contractType?: ContractType;
+}
+
+export interface AcademicDegree {
+  id: string;
+  code: string;
+  name: string;
+  shortName: string;
+  employees?: Employee[];
+}
+
+export interface AcademicTitle {
+  id: string;
+  code: string;
+  name: string;
+  shortName: string;
+  employees?: Employee[];
 }

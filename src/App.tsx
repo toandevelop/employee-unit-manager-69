@@ -11,6 +11,8 @@ import DepartmentsPage from "./pages/Departments";
 import PositionsPage from "./pages/Positions";
 import ContractsPage from "./pages/Contracts";
 import ContractTypesPage from "./pages/ContractTypes";
+import AcademicDegreesPage from "./pages/AcademicDegrees";
+import AcademicTitlesPage from "./pages/AcademicTitles";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +31,8 @@ const App = () => (
               <Route path="/positions" element={<PositionsPage />} />
               <Route path="/contracts" element={<ContractsPage />} />
               <Route path="/contract-types" element={<ContractTypesPage />} />
+              <Route path="/academic-degrees" element={<AcademicDegreesPage />} />
+              <Route path="/academic-titles" element={<AcademicTitlesPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>
