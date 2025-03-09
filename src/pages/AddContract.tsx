@@ -187,7 +187,7 @@ const AddContractPage = () => {
                             <SelectValue placeholder="Chọn loại hợp đồng" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent searchable>
+                        <SelectContent>
                           {contractTypes.map((contractType) => (
                             <SelectItem key={contractType.id} value={contractType.id}>
                               {contractType.name}
@@ -251,8 +251,8 @@ const AddContractPage = () => {
                       <Building className="w-4 h-4 mr-2 text-muted-foreground" />
                       <SelectValue placeholder="Chọn phòng ban (không bắt buộc)" />
                     </SelectTrigger>
-                    <SelectContent searchable>
-                      <SelectItem value="">Tất cả phòng ban</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="_all">Tất cả phòng ban</SelectItem>
                       {departments.map((department) => (
                         <SelectItem key={department.id} value={department.id}>
                           {department.name}
@@ -281,7 +281,7 @@ const AddContractPage = () => {
                             <SelectValue placeholder="Chọn nhân viên" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent searchable>
+                        <SelectContent>
                           {filteredEmployees.length === 0 ? (
                             <div className="p-2 text-center text-muted-foreground">
                               Không tìm thấy nhân viên
