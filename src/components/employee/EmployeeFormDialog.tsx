@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Employee, Department, Position, AcademicDegree, AcademicTitle } from '@/types';
+import { EmployeeFormValues } from './form/types';
+import { useAppStore } from '@/store';
 
 interface EmployeeFormData {
   code: string;
@@ -24,30 +25,34 @@ interface EmployeeFormData {
 interface EmployeeFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  formData: EmployeeFormData;
-  setFormData: React.Dispatch<React.SetStateAction<EmployeeFormData>>;
-  departments: Department[];
-  positions: Position[];
-  academicDegrees: AcademicDegree[];
-  academicTitles: AcademicTitle[];
-  onSubmit: () => void;
-  isEditing: boolean;
+  employee?: Employee;
+  onSubmit: (formData: EmployeeFormValues) => void; // Updated to accept formData parameter
   onCancel: () => void;
 }
 
 const EmployeeFormDialog = ({
   isOpen,
   onOpenChange,
-  formData,
-  setFormData,
-  departments,
-  positions,
-  academicDegrees,
-  academicTitles,
+  employee,
   onSubmit,
-  isEditing,
   onCancel
 }: EmployeeFormDialogProps) => {
+  // Initialize formData from employee or with default values
+  const [formData, setFormData] = useState<EmployeeFormData>({
+    code: employee?.code || '',
+    name: employee?.name || '',
+    address: employee?.address || '',
+    phone: employee?.phone || '',
+    identityCard: employee?.identityCard || '',
+    contractDate: employee?.contractDate || '',
+    departmentIds: employee?.departmentEmployees?.map(de => de.departmentId) || [],
+    positionIds: employee?.positionEmployees?.map(pe => pe.positionId) || [],
+    academicDegreeId: employee?.academicDegreeId || '',
+    academicTitleId: employee?.academicTitleId || ''
+  });
+
+  // Use the store to get departments, positions, etc.
+  const { departments, positions, academicDegrees, academicTitles } = useAppStore();
   
   // Handle form input change
   const handleInputChange = (field: string, value: string) => {
@@ -119,13 +124,13 @@ const EmployeeFormDialog = ({
     return true;
   };
   
-  // Handle form submission
+  // Handle form submission - pass the formData to the parent's onSubmit handler
   const handleSubmit = () => {
     if (!validateForm()) {
       alert("Vui lòng điền đầy đủ thông tin");
       return;
     }
-    onSubmit();
+    onSubmit(formData);
   };
 
   return (
@@ -133,10 +138,10 @@ const EmployeeFormDialog = ({
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Chỉnh sửa thông tin nhân viên' : 'Thêm nhân viên mới'}
+            {employee?.id ? 'Chỉnh sửa thông tin nhân viên' : 'Thêm nhân viên mới'}
           </DialogTitle>
           <DialogDescription>
-            {isEditing 
+            {employee?.id
               ? 'Cập nhật thông tin nhân viên trong biểu mẫu dưới đây'
               : 'Nhập thông tin nhân viên mới vào biểu mẫu dưới đây'
             }
@@ -320,7 +325,7 @@ const EmployeeFormDialog = ({
             Hủy
           </Button>
           <Button onClick={handleSubmit}>
-            {isEditing ? 'Lưu thay đổi' : 'Thêm nhân viên'}
+            {employee?.id ? 'Lưu thay đổi' : 'Thêm nhân viên'}
           </Button>
         </DialogFooter>
       </DialogContent>
