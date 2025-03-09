@@ -76,6 +76,35 @@ const EmployeeFormDialog = ({
     });
   };
 
+  // State for filtered departments and positions
+  const [filteredDepartments, setFilteredDepartments] = useState(departments);
+  const [filteredPositions, setFilteredPositions] = useState(positions);
+
+  // Handle department search
+  const handleDepartmentSearch = (query: string) => {
+    if (!query) {
+      setFilteredDepartments(departments);
+      return;
+    }
+    const filtered = departments.filter(dept => 
+      dept.name.toLowerCase().includes(query.toLowerCase()) || 
+      dept.code.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredDepartments(filtered);
+  };
+
+  // Handle position search
+  const handlePositionSearch = (query: string) => {
+    if (!query) {
+      setFilteredPositions(positions);
+      return;
+    }
+    const filtered = positions.filter(pos => 
+      pos.name.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredPositions(filtered);
+  };
+
   // Validate form before submission
   const validateForm = () => {
     if (!formData.code || !formData.name || !formData.address || 
@@ -189,7 +218,7 @@ const EmployeeFormDialog = ({
                 <SelectTrigger id="academicDegree">
                   <SelectValue placeholder="Chọn học vị" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable>
                   {academicDegrees.map((degree) => (
                     <SelectItem key={degree.id} value={degree.id}>
                       {degree.shortName} - {degree.name}
@@ -202,13 +231,13 @@ const EmployeeFormDialog = ({
             <div className="space-y-2">
               <Label htmlFor="academicTitle">Học hàm</Label>
               <Select
-                value={formData.academicTitleId || ""}
-                onValueChange={(value) => handleInputChange('academicTitleId', value === "" ? undefined : value)}
+                value={formData.academicTitleId || "none"}
+                onValueChange={(value) => handleInputChange('academicTitleId', value === "none" ? undefined : value)}
               >
                 <SelectTrigger id="academicTitle">
                   <SelectValue placeholder="Chọn học hàm (nếu có)" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable>
                   {/* Fix: Use a non-empty string value for the "no academic title" option */}
                   <SelectItem value="none">Không có học hàm</SelectItem>
                   {academicTitles.map((title) => (
@@ -224,7 +253,14 @@ const EmployeeFormDialog = ({
           <div className="space-y-2">
             <Label>Đơn vị</Label>
             <div className="grid grid-cols-2 gap-2 p-2 border rounded-md max-h-48 overflow-y-auto">
-              {departments.map((department) => (
+              <div className="col-span-2 mb-2">
+                <Input
+                  placeholder="Tìm kiếm đơn vị..."
+                  onChange={(e) => handleDepartmentSearch(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              {filteredDepartments.map((department) => (
                 <div className="flex items-center space-x-2" key={department.id}>
                   <Checkbox
                     id={`department-${department.id}`}
@@ -238,13 +274,25 @@ const EmployeeFormDialog = ({
                   </Label>
                 </div>
               ))}
+              {filteredDepartments.length === 0 && (
+                <div className="col-span-2 text-center text-muted-foreground py-2">
+                  Không tìm thấy đơn vị phù hợp
+                </div>
+              )}
             </div>
           </div>
           
           <div className="space-y-2">
             <Label>Chức vụ</Label>
             <div className="grid grid-cols-2 gap-2 p-2 border rounded-md max-h-48 overflow-y-auto">
-              {positions.map((position) => (
+              <div className="col-span-2 mb-2">
+                <Input
+                  placeholder="Tìm kiếm chức vụ..."
+                  onChange={(e) => handlePositionSearch(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              {filteredPositions.map((position) => (
                 <div className="flex items-center space-x-2" key={position.id}>
                   <Checkbox
                     id={`position-${position.id}`}
@@ -258,6 +306,11 @@ const EmployeeFormDialog = ({
                   </Label>
                 </div>
               ))}
+              {filteredPositions.length === 0 && (
+                <div className="col-span-2 text-center text-muted-foreground py-2">
+                  Không tìm thấy chức vụ phù hợp
+                </div>
+              )}
             </div>
           </div>
         </div>
