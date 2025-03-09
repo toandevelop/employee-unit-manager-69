@@ -13,7 +13,9 @@ import {
   Pencil, 
   Trash2, 
   X, 
-  Check 
+  Check,
+  GraduationCap,
+  BookOpen
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,6 +37,8 @@ const EmployeesPage = () => {
     positions, 
     departmentEmployees, 
     positionEmployees,
+    academicDegrees,
+    academicTitles,
     addEmployee,
     updateEmployee,
     deleteEmployee
@@ -50,6 +54,8 @@ const EmployeesPage = () => {
     contractDate: string;
     departmentIds: string[];
     positionIds: string[];
+    academicDegreeId?: string;
+    academicTitleId?: string;
   }>({
     code: '',
     name: '',
@@ -58,7 +64,9 @@ const EmployeesPage = () => {
     identityCard: '',
     contractDate: '',
     departmentIds: [],
-    positionIds: []
+    positionIds: [],
+    academicDegreeId: undefined,
+    academicTitleId: undefined
   });
   
   const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
@@ -89,6 +97,20 @@ const EmployeesPage = () => {
     return positions.filter(pos => positionIds.includes(pos.id));
   };
   
+  // Helper function to get academic degree name by id
+  const getAcademicDegreeName = (id?: string) => {
+    if (!id) return null;
+    const degree = academicDegrees.find(d => d.id === id);
+    return degree ? `${degree.shortName} (${degree.name})` : null;
+  };
+  
+  // Helper function to get academic title name by id
+  const getAcademicTitleName = (id?: string) => {
+    if (!id) return null;
+    const title = academicTitles.find(t => t.id === id);
+    return title ? `${title.shortName} (${title.name})` : null;
+  };
+  
   // Reset form data
   const resetFormData = () => {
     setFormData({
@@ -99,7 +121,9 @@ const EmployeesPage = () => {
       identityCard: '',
       contractDate: '',
       departmentIds: [],
-      positionIds: []
+      positionIds: [],
+      academicDegreeId: undefined,
+      academicTitleId: undefined
     });
   };
   
@@ -128,7 +152,9 @@ const EmployeesPage = () => {
       identityCard: employee.identityCard,
       contractDate: employee.contractDate,
       departmentIds,
-      positionIds
+      positionIds,
+      academicDegreeId: employee.academicDegreeId,
+      academicTitleId: employee.academicTitleId
     });
     
     setEditingEmployee(employee.id);
@@ -271,6 +297,47 @@ const EmployeesPage = () => {
                 />
               </div>
               
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="academicDegree">Học vị</Label>
+                  <Select
+                    value={formData.academicDegreeId}
+                    onValueChange={(value) => setFormData({ ...formData, academicDegreeId: value })}
+                  >
+                    <SelectTrigger id="academicDegree">
+                      <SelectValue placeholder="Chọn học vị" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {academicDegrees.map((degree) => (
+                        <SelectItem key={degree.id} value={degree.id}>
+                          {degree.shortName} - {degree.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="academicTitle">Học hàm</Label>
+                  <Select
+                    value={formData.academicTitleId || ""}
+                    onValueChange={(value) => setFormData({ ...formData, academicTitleId: value || undefined })}
+                  >
+                    <SelectTrigger id="academicTitle">
+                      <SelectValue placeholder="Chọn học hàm (nếu có)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Không có học hàm</SelectItem>
+                      {academicTitles.map((title) => (
+                        <SelectItem key={title.id} value={title.id}>
+                          {title.shortName} - {title.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
               <div className="space-y-2">
                 <Label>Đơn vị</Label>
                 <div className="grid grid-cols-2 gap-2 p-2 border rounded-md max-h-48 overflow-y-auto">
@@ -341,6 +408,8 @@ const EmployeesPage = () => {
         {filteredEmployees.length > 0 ? filteredEmployees.map((employee) => {
           const employeeDepartments = getEmployeeDepartments(employee.id);
           const employeePositions = getEmployeePositions(employee.id);
+          const academicDegree = getAcademicDegreeName(employee.academicDegreeId);
+          const academicTitle = getAcademicTitleName(employee.academicTitleId);
           
           return (
             <motion.div key={employee.id} variants={cardVariants}>
@@ -421,6 +490,24 @@ const EmployeesPage = () => {
                         </div>
                       </div>
                     </div>
+                    
+                    {(academicDegree || academicTitle) && (
+                      <div className="space-y-2">
+                        {academicDegree && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                            <span><span className="font-medium">Học vị:</span> {academicDegree}</span>
+                          </div>
+                        )}
+                        
+                        {academicTitle && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <BookOpen className="h-4 w-4 text-muted-foreground" />
+                            <span><span className="font-medium">Học hàm:</span> {academicTitle}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     
                     <div className="flex items-center gap-3 text-sm">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -523,6 +610,47 @@ const EmployeesPage = () => {
                 value={formData.contractDate}
                 onChange={(e) => setFormData({ ...formData, contractDate: e.target.value })}
               />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-academicDegree">Học vị</Label>
+                <Select
+                  value={formData.academicDegreeId}
+                  onValueChange={(value) => setFormData({ ...formData, academicDegreeId: value })}
+                >
+                  <SelectTrigger id="edit-academicDegree">
+                    <SelectValue placeholder="Chọn học vị" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {academicDegrees.map((degree) => (
+                      <SelectItem key={degree.id} value={degree.id}>
+                        {degree.shortName} - {degree.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-academicTitle">Học hàm</Label>
+                <Select
+                  value={formData.academicTitleId || ""}
+                  onValueChange={(value) => setFormData({ ...formData, academicTitleId: value || undefined })}
+                >
+                  <SelectTrigger id="edit-academicTitle">
+                    <SelectValue placeholder="Chọn học hàm (nếu có)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Không có học hàm</SelectItem>
+                    {academicTitles.map((title) => (
+                      <SelectItem key={title.id} value={title.id}>
+                        {title.shortName} - {title.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="space-y-2">
