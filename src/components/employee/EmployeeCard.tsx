@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -17,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Department, Employee, Position } from '@/types';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -47,11 +47,19 @@ const EmployeeCard = ({
       <Card className="overflow-hidden hover:shadow-md transition-all-300">
         <CardHeader className="bg-primary/5 pb-4">
           <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="font-bold">{employee.name}</CardTitle>
-              <CardDescription className="mt-1">
-                {employee.code}
-              </CardDescription>
+            <div className="flex items-center gap-4">
+              <Avatar className="w-12 h-12">
+                <AvatarImage src={employee.avatar} />
+                <AvatarFallback>
+                  <User className="w-6 h-6 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="font-bold">{employee.name}</CardTitle>
+                <CardDescription className="mt-1">
+                  {employee.code}
+                </CardDescription>
+              </div>
             </div>
             
             <div className="flex space-x-2">

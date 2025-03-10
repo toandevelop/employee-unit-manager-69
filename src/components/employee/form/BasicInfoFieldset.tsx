@@ -1,8 +1,9 @@
-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EmployeeFormValues } from './types';
-import { User, MapPin, Phone, CreditCard, Calendar } from 'lucide-react';
+import { User, MapPin, Phone, CreditCard, Calendar, ImagePlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface BasicInfoFieldsetProps {
   formData: EmployeeFormValues;
@@ -10,9 +11,46 @@ interface BasicInfoFieldsetProps {
 }
 
 export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFieldsetProps) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleInputChange('avatar', reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <div className="space-y-6 p-2">
+    <div className="space-y-6 p-6">
       <h3 className="text-lg font-medium border-b pb-2 mb-4">Thông tin cơ bản</h3>
+
+      <div className="flex justify-center mb-6">
+        <div className="text-center space-y-2">
+          <Avatar className="w-24 h-24 mx-auto">
+            <AvatarImage src={formData.avatar} />
+            <AvatarFallback>
+              <User className="w-12 h-12 text-muted-foreground" />
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <Label htmlFor="avatar" className="cursor-pointer">
+              <div className="flex items-center gap-2 text-sm text-primary hover:text-primary/80">
+                <ImagePlus className="w-4 h-4" />
+                <span>Tải lên ảnh đại diện</span>
+              </div>
+            </Label>
+            <Input
+              id="avatar"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
+        </div>
+      </div>
       
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
