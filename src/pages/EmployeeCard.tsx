@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useAppStore } from '@/store';
 import { motion } from 'framer-motion';
@@ -22,12 +21,14 @@ import { Employee } from '@/types';
 import EmployeeCardTemplate from '@/components/employee/EmployeeCardTemplate';
 import PrintableCard from '@/components/employee/PrintableCard';
 import { toast } from 'sonner';
+import { CardTemplate } from '@/types/cardTemplate';
 
 const EmployeeCardPage: React.FC = () => {
   const { employees, departments } = useAppStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('default');
   const printRef = useRef<HTMLDivElement>(null);
 
   const filteredEmployees = employees.filter(employee => {
@@ -62,6 +63,31 @@ const EmployeeCardPage: React.FC = () => {
     }
   };
 
+  // Mock templates - in a real app, these would come from your store/API
+  const cardTemplates: CardTemplate[] = [
+    {
+      id: 'default',
+      name: 'Default Template',
+      organizationId: '',
+      backgroundColor: 'white',
+      headerColor: 'bg-primary',
+      textColor: 'text-gray-800',
+      qrCodePosition: 'bottom',
+      showLogo: true
+    },
+    {
+      id: 'modern',
+      name: 'Modern Template',
+      organizationId: '',
+      backgroundColor: '#f8f9fa',
+      headerColor: 'bg-blue-600',
+      textColor: 'text-gray-900',
+      qrCodePosition: 'right',
+      showLogo: true
+    },
+    // Add more templates as needed
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -93,8 +119,8 @@ const EmployeeCardPage: React.FC = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle>Bộ lọc</CardTitle>
-          <CardDescription>Tìm kiếm nhân viên để in thẻ</CardDescription>
+          <CardTitle>Bộ lọc và tùy chọn in</CardTitle>
+          <CardDescription>Tìm kiếm nhân viên và chọn mẫu thẻ để in</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -122,6 +148,22 @@ const EmployeeCardPage: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+            
+            <Select
+              value={selectedTemplate}
+              onValueChange={setSelectedTemplate}
+            >
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Chọn mẫu thẻ" />
+              </SelectTrigger>
+              <SelectContent>
+                {cardTemplates.map(template => (
+                  <SelectItem key={template.id} value={template.id}>
+                    {template.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -131,6 +173,7 @@ const EmployeeCardPage: React.FC = () => {
           <EmployeeCard
             key={employee.id}
             employee={employee}
+            template={cardTemplates.find(t => t.id === selectedTemplate)}
             isSelected={selectedEmployees.includes(employee.id)}
             onToggleSelect={() => toggleEmployeeSelection(employee.id)}
           />
@@ -153,7 +196,13 @@ const EmployeeCardPage: React.FC = () => {
           {selectedEmployees.map(id => {
             const employee = employees.find(emp => emp.id === id);
             if (!employee) return null;
-            return <PrintableCard key={id} employee={employee} />;
+            return (
+              <PrintableCard 
+                key={id} 
+                employee={employee}
+                template={cardTemplates.find(t => t.id === selectedTemplate)}
+              />
+            );
           })}
         </div>
       </div>
@@ -166,9 +215,10 @@ interface EmployeeCardProps {
   employee: Employee;
   isSelected: boolean;
   onToggleSelect: () => void;
+  template?: CardTemplate;
 }
 
-const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, isSelected, onToggleSelect }) => {
+const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, isSelected, onToggleSelect, template }) => {
   const { getEmployeeDepartments, getEmployeePositions } = useEmployeeHelpers();
   const departments = getEmployeeDepartments(employee.id);
   const positions = getEmployeePositions(employee.id);
@@ -199,7 +249,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, isSelected, onTog
             </TabsList>
             
             <TabsContent value="preview" className="p-0 m-0 flex justify-center">
-              <EmployeeCardTemplate employee={employee} />
+              <EmployeeCardTemplate employee={employee} template={template} />
             </TabsContent>
             
             <TabsContent value="info" className="p-4 m-0">
