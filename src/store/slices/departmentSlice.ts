@@ -1,16 +1,43 @@
 
 import { create } from 'zustand';
-import { departments as initialDepartments } from '../../data/mockData';
 import { Department } from '../../types';
 import { toast } from 'sonner';
 
-interface DepartmentState {
-  departments: Department[];
-  
-  addDepartment: (department: Omit<Department, 'id' | 'departmentEmployees'>) => void;
-  updateDepartment: (id: string, department: Partial<Department>) => void;
-  deleteDepartment: (id: string) => void;
-}
+// Initial data for departments in Nam Can Tho University
+const initialDepartments: Department[] = [
+  {
+    id: "1",
+    code: "CNTT",
+    name: "Phòng Công nghệ thông tin",
+    foundingDate: "2013-06-15",
+    organizationId: "1", // ID of Nam Can Tho University
+    departmentEmployees: []
+  },
+  {
+    id: "2",
+    code: "NS",
+    name: "Phòng Nhân sự",
+    foundingDate: "2013-06-15",
+    organizationId: "1", // ID of Nam Can Tho University
+    departmentEmployees: []
+  },
+  {
+    id: "3",
+    code: "KT",
+    name: "Phòng Kế toán",
+    foundingDate: "2013-06-15",
+    organizationId: "1", // ID of Nam Can Tho University
+    departmentEmployees: []
+  },
+  {
+    id: "4",
+    code: "MKT",
+    name: "Phòng Marketing",
+    foundingDate: "2013-06-15",
+    organizationId: "1", // ID of Nam Can Tho University
+    departmentEmployees: []
+  }
+];
 
 export const createDepartmentSlice = (
   set: (fn: (state: any) => any) => void,
@@ -18,9 +45,9 @@ export const createDepartmentSlice = (
 ) => ({
   departments: initialDepartments,
   
-  addDepartment: (departmentData) => {
+  addDepartment: (departmentData: Omit<Department, 'id' | 'departmentEmployees'>) => {
     set((state: any) => {
-      const newId = (Math.max(...state.departments.map(d => parseInt(d.id))) + 1).toString();
+      const newId = (Math.max(...state.departments.map((d: Department) => parseInt(d.id))) + 1).toString();
       
       const newDepartment: Department = {
         id: newId,
@@ -28,47 +55,112 @@ export const createDepartmentSlice = (
         departmentEmployees: []
       };
       
-      toast.success("Thêm đơn vị thành công");
+      // Also update the organization's departments list
+      const updatedOrganizations = state.organizations.map((org: any) => {
+        if (org.id === departmentData.organizationId) {
+          return {
+            ...org,
+            departments: [...org.departments, newDepartment]
+          };
+        }
+        return org;
+      });
+      
+      toast.success("Thêm phòng ban thành công");
       
       return {
-        departments: [...state.departments, newDepartment]
+        departments: [...state.departments, newDepartment],
+        organizations: updatedOrganizations
       };
     });
   },
   
-  updateDepartment: (id, departmentData) => {
+  updateDepartment: (id: string, departmentData: Partial<Department>) => {
     set((state: any) => {
       // Process headId - convert "none" to undefined
       if (departmentData.headId === "none") {
         departmentData.headId = undefined;
       }
       
-      const updatedDepartments = state.departments.map(dept => 
-        dept.id === id ? { ...dept, ...departmentData } : dept
+      const oldDepartment = state.departments.find((d: Department) => d.id === id);
+      const updatedDepartment = { ...oldDepartment, ...departmentData };
+      
+      const updatedDepartments = state.departments.map((dept: Department) => 
+        dept.id === id ? updatedDepartment : dept
       );
       
-      toast.success("Cập nhật thông tin đơn vị thành công");
+      // If organizationId changed, update both organizations
+      let updatedOrganizations = state.organizations;
+      if (departmentData.organizationId && oldDepartment.organizationId !== departmentData.organizationId) {
+        updatedOrganizations = state.organizations.map((org: any) => {
+          // Remove from old organization
+          if (org.id === oldDepartment.organizationId) {
+            return {
+              ...org,
+              departments: org.departments.filter((d: Department) => d.id !== id)
+            };
+          }
+          // Add to new organization
+          if (org.id === departmentData.organizationId) {
+            return {
+              ...org,
+              departments: [...org.departments, updatedDepartment]
+            };
+          }
+          return org;
+        });
+      } else if (departmentData.name || departmentData.code || departmentData.foundingDate || departmentData.headId) {
+        // Just update the department in the current organization
+        updatedOrganizations = state.organizations.map((org: any) => {
+          if (org.id === oldDepartment.organizationId) {
+            return {
+              ...org,
+              departments: org.departments.map((d: Department) => 
+                d.id === id ? updatedDepartment : d
+              )
+            };
+          }
+          return org;
+        });
+      }
+      
+      toast.success("Cập nhật thông tin phòng ban thành công");
       
       return {
-        departments: updatedDepartments
+        departments: updatedDepartments,
+        organizations: updatedOrganizations
       };
     });
   },
   
-  deleteDepartment: (id) => {
+  deleteDepartment: (id: string) => {
     set((state: any) => {
-      const hasEmployees = state.departmentEmployees.some(de => de.departmentId === id);
+      const hasEmployees = state.departmentEmployees.some((de: any) => de.departmentId === id);
       
       if (hasEmployees) {
-        toast.error("Không thể xoá đơn vị đang có nhân viên");
+        toast.error("Không thể xoá phòng ban đang có nhân viên");
         return state;
       }
       
-      toast.success("Xoá đơn vị thành công");
+      const departmentToDelete = state.departments.find((d: Department) => d.id === id);
+      
+      // Also remove the department from its organization
+      const updatedOrganizations = state.organizations.map((org: any) => {
+        if (org.id === departmentToDelete.organizationId) {
+          return {
+            ...org,
+            departments: org.departments.filter((d: Department) => d.id !== id)
+          };
+        }
+        return org;
+      });
+      
+      toast.success("Xoá phòng ban thành công");
       
       return {
-        departments: state.departments.filter(dept => dept.id !== id),
-        departmentEmployees: state.departmentEmployees.filter(de => de.departmentId !== id)
+        departments: state.departments.filter((dept: Department) => dept.id !== id),
+        departmentEmployees: state.departmentEmployees.filter((de: any) => de.departmentId !== id),
+        organizations: updatedOrganizations
       };
     });
   },

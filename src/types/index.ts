@@ -15,12 +15,24 @@ export interface Employee {
   academicTitleId?: string;
 }
 
+export interface Organization {
+  id: string;
+  code: string;
+  name: string;
+  foundingDate: string;
+  description?: string;
+  logo?: string;
+  departments: Department[];
+}
+
 export interface Department {
   id: string;
   code: string;
   name: string;
   foundingDate: string;
   headId?: string;
+  organizationId: string; // Each department belongs to one organization
+  organization?: Organization;
   departmentEmployees: DepartmentEmployee[];
 }
 
