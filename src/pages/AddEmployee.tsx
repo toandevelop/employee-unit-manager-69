@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store';
 import { motion } from 'framer-motion';
@@ -18,8 +17,15 @@ const AddEmployeePage = () => {
   
   // Handle adding a new employee
   const handleAddEmployee = (formData: EmployeeFormValues) => {
-    // Validation is handled inside the EmployeeForm component
-    addEmployee(formData);
+    console.log("Adding employee with data:", formData);
+    
+    // Make sure departmentIds and positionIds are passed to the store action
+    addEmployee({
+      ...formData,
+      departmentIds: formData.departmentIds || [],
+      positionIds: formData.positionIds || []
+    });
+    
     toast.success("Thêm nhân viên thành công");
     navigate('/employees');
   };

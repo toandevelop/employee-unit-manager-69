@@ -68,7 +68,11 @@ export const createEmployeeSlice = (
         };
       });
       
-      toast.success("Thêm nhân viên thành công");
+      console.log("Adding new employee:", newEmployee);
+      console.log("With departmentIds:", departmentIds);
+      console.log("With positionIds:", positionIds);
+      console.log("New department relationships:", newDepartmentEmployees);
+      console.log("New position relationships:", newPositionEmployees);
       
       return {
         employees: [...state.employees, newEmployee],

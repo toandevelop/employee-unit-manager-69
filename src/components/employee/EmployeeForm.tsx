@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,7 +68,7 @@ export default function EmployeeForm({
   // Handle form submission both from tag-based input and react-hook-form
   const handleSubmitForm = () => {
     form.handleSubmit((values) => {
-      // Merge values with formData to ensure all tag-based selections are included
+      // Make sure to include the department and position IDs from formData
       onSubmit({
         ...values,
         departmentIds: formData.departmentIds,
