@@ -15,6 +15,7 @@ export const departments: Department[] = [
     code: "IT",
     name: "Phòng Công nghệ thông tin", 
     foundingDate: "2020-01-10",
+    organizationId: "1", // Added organizationId to fix TypeScript error
     departmentEmployees: []
   },
   { 
@@ -22,6 +23,7 @@ export const departments: Department[] = [
     code: "HR",
     name: "Phòng Nhân sự", 
     foundingDate: "2020-01-10",
+    organizationId: "1", // Added organizationId to fix TypeScript error
     departmentEmployees: []
   },
   { 
@@ -29,6 +31,7 @@ export const departments: Department[] = [
     code: "ACC",
     name: "Phòng Kế toán", 
     foundingDate: "2020-02-20",
+    organizationId: "1", // Added organizationId to fix TypeScript error
     departmentEmployees: []
   },
   { 
@@ -36,6 +39,7 @@ export const departments: Department[] = [
     code: "MKT",
     name: "Phòng Marketing", 
     foundingDate: "2020-03-15",
+    organizationId: "1", // Added organizationId to fix TypeScript error
     departmentEmployees: []
   },
 ];
