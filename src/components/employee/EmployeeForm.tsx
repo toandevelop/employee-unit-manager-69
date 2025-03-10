@@ -4,13 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Employee } from "@/types";
 import { useAppStore } from "@/store";
 import { Form } from "@/components/ui/form";
-import { Accordion } from "@/components/ui/accordion";
 import { formSchema, EmployeeFormValues } from "./form/types";
-import { BasicInfoFields } from "./form/BasicInfoFields";
-import { ContractDateField } from "./form/ContractDateField";
-import { AcademicFields } from "./form/AcademicFields";
-import { DepartmentsSection } from "./form/DepartmentsSection";
-import { PositionsSection } from "./form/PositionsSection";
 import { FormActions } from "./form/FormActions";
 import { EmployeeFormContent } from "./form/EmployeeFormContent";
 
@@ -85,22 +79,7 @@ export default function EmployeeForm({
   return (
     <Form {...form}>
       <form onSubmit={(e) => { e.preventDefault(); handleSubmitForm(); }} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <BasicInfoFields form={form} />
-          
-          <ContractDateField 
-            form={form} 
-            initialDate={employee?.contractDate} 
-          />
-          
-          <AcademicFields 
-            form={form} 
-            academicDegrees={academicDegrees} 
-            academicTitles={academicTitles}
-          />
-        </div>
-
-        {/* Use the new EmployeeFormContent component for tag-based selection */}
+        {/* Use only the EmployeeFormContent component which contains all the form fields */}
         <EmployeeFormContent 
           formData={formData}
           setFormData={setFormData}
