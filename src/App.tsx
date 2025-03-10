@@ -10,7 +10,6 @@ import Dashboard from "./pages/Dashboard";
 import EmployeesPage from "./pages/Employees";
 import AddEmployeePage from "./pages/AddEmployee";
 import DepartmentsPage from "./pages/Departments";
-import OrganizationsPage from "./pages/Organizations";
 import PositionsPage from "./pages/Positions";
 import ContractsPage from "./pages/Contracts";
 import AddContractPage from "./pages/AddContract";
@@ -21,7 +20,6 @@ import AcademicTitlesPage from "./pages/AcademicTitles";
 import WorkReportsPage from "./pages/WorkReports";
 import AddWorkReportPage from "./pages/AddWorkReport";
 import EditWorkReportPage from "./pages/EditWorkReport";
-import EmployeeCardPage from "./pages/EmployeeCard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,7 +37,6 @@ const App = () => (
               <Route path="/employees" element={<EmployeesPage />} />
               <Route path="/employees/add" element={<AddEmployeePage />} />
               <Route path="/departments" element={<DepartmentsPage />} />
-              <Route path="/organizations" element={<OrganizationsPage />} />
               <Route path="/positions" element={<PositionsPage />} />
               <Route path="/contracts" element={<ContractsPage />} />
               <Route path="/contracts/add" element={<AddContractPage />} />
@@ -51,7 +48,6 @@ const App = () => (
               <Route path="/work-reports/add" element={<AddWorkReportPage />} />
               <Route path="/work-reports/add/:employeeId" element={<AddWorkReportPage />} />
               <Route path="/work-reports/edit/:id" element={<EditWorkReportPage />} />
-              <Route path="/employee-card" element={<EmployeeCardPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>

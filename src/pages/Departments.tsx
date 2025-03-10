@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -28,7 +27,6 @@ const DepartmentsPage = () => {
     departments, 
     employees, 
     departmentEmployees,
-    organizations,
     addDepartment,
     updateDepartment,
     deleteDepartment
@@ -40,13 +38,11 @@ const DepartmentsPage = () => {
     name: string;
     foundingDate: string;
     headId?: string;
-    organizationId: string; // Added organizationId to form data
   }>({
     code: '',
     name: '',
     foundingDate: '',
     headId: '',
-    organizationId: organizations[0]?.id || '1' // Default to first organization or "1" if none exists
   });
   
   const [editingDepartment, setEditingDepartment] = useState<string | null>(null);
@@ -79,7 +75,6 @@ const DepartmentsPage = () => {
       name: '',
       foundingDate: '',
       headId: '',
-      organizationId: organizations[0]?.id || '1' // Reset to default organization
     });
   };
   
@@ -95,7 +90,6 @@ const DepartmentsPage = () => {
       name: department.name,
       foundingDate: department.foundingDate,
       headId: department.headId,
-      organizationId: department.organizationId
     });
     
     setEditingDepartment(department.id);
@@ -200,25 +194,6 @@ const DepartmentsPage = () => {
                   value={formData.foundingDate}
                   onChange={(e) => setFormData({ ...formData, foundingDate: e.target.value })}
                 />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="organizationId">Tổ chức</Label>
-                <Select 
-                  value={formData.organizationId} 
-                  onValueChange={(value) => setFormData({ ...formData, organizationId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn tổ chức" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {organizations.map(org => (
-                      <SelectItem key={org.id} value={org.id}>
-                        {org.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
             
@@ -402,25 +377,6 @@ const DepartmentsPage = () => {
                 value={formData.foundingDate}
                 onChange={(e) => setFormData({ ...formData, foundingDate: e.target.value })}
               />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-organizationId">Tổ chức</Label>
-              <Select 
-                value={formData.organizationId} 
-                onValueChange={(value) => setFormData({ ...formData, organizationId: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn tổ chức" />
-                </SelectTrigger>
-                <SelectContent>
-                  {organizations.map(org => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           
