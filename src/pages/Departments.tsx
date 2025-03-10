@@ -8,13 +8,15 @@ import {
   Users,
   Building2,
   Pencil, 
-  Trash2 
+  Trash2,
+  UserCog
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -36,15 +38,19 @@ const DepartmentsPage = () => {
     code: string;
     name: string;
     foundingDate: string;
+    headId?: string;
   }>({
     code: '',
     name: '',
     foundingDate: '',
+    headId: '',
   });
   
   const [editingDepartment, setEditingDepartment] = useState<string | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isHeadDialogOpen, setIsHeadDialogOpen] = useState(false);
+  const [selectedDepartmentForHead, setSelectedDepartmentForHead] = useState<Department | null>(null);
   
   // Filter departments based on search query
   const filteredDepartments = departments.filter(department => 
@@ -61,12 +67,19 @@ const DepartmentsPage = () => {
     return employees.filter(employee => employeeIds.includes(employee.id));
   };
   
+  // Helper function to get the head of a department
+  const getDepartmentHead = (headId?: string) => {
+    if (!headId) return null;
+    return employees.find(employee => employee.id === headId);
+  };
+  
   // Reset form data
   const resetFormData = () => {
     setFormData({
       code: '',
       name: '',
       foundingDate: '',
+      headId: '',
     });
   };
   
@@ -83,6 +96,7 @@ const DepartmentsPage = () => {
       code: department.code,
       name: department.name,
       foundingDate: department.foundingDate,
+      headId: department.headId,
     });
     
     setEditingDepartment(department.id);
@@ -96,6 +110,25 @@ const DepartmentsPage = () => {
       setIsEditDialogOpen(false);
       setEditingDepartment(null);
       resetFormData();
+    }
+  };
+  
+  // Handle setting department head
+  const handleSetDepartmentHead = (department: Department) => {
+    setSelectedDepartmentForHead(department);
+    setFormData(prev => ({
+      ...prev,
+      headId: department.headId || '',
+    }));
+    setIsHeadDialogOpen(true);
+  };
+  
+  // Save department head
+  const handleSaveDepartmentHead = () => {
+    if (selectedDepartmentForHead) {
+      updateDepartment(selectedDepartmentForHead.id, { headId: formData.headId || undefined });
+      setIsHeadDialogOpen(false);
+      setSelectedDepartmentForHead(null);
     }
   };
   
@@ -113,6 +146,12 @@ const DepartmentsPage = () => {
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+  };
+  
+  // Get department employees for head selection
+  const getDepartmentEmployeesForSelect = (departmentId: string) => {
+    if (!departmentId || !selectedDepartmentForHead) return employees;
+    return getDepartmentEmployees(departmentId);
   };
   
   return (
@@ -198,6 +237,7 @@ const DepartmentsPage = () => {
       >
         {filteredDepartments.length > 0 ? filteredDepartments.map((department) => {
           const departmentEmployeesList = getDepartmentEmployees(department.id);
+          const departmentHead = getDepartmentHead(department.headId);
           
           return (
             <motion.div key={department.id} variants={cardVariants}>
@@ -212,6 +252,16 @@ const DepartmentsPage = () => {
                     </div>
                     
                     <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 text-primary"
+                        onClick={() => handleSetDepartmentHead(department)}
+                        title="Thiết lập người đứng đầu"
+                      >
+                        <UserCog className="h-4 w-4" />
+                      </Button>
+                      
                       <Button
                         variant="outline"
                         size="icon"
@@ -261,6 +311,16 @@ const DepartmentsPage = () => {
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>Ngày thành lập: {new Date(department.foundingDate).toLocaleDateString('vi-VN')}</span>
                     </div>
+                    
+                    {departmentHead && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <UserCog className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <span className="font-medium">Người đứng đầu: </span>
+                          <span>{departmentHead.name}</span>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-start gap-3 text-sm">
                       <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
@@ -342,6 +402,60 @@ const DepartmentsPage = () => {
               Hủy
             </Button>
             <Button onClick={handleUpdateDepartment}>Lưu thay đổi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Set Department Head Dialog */}
+      <Dialog open={isHeadDialogOpen} onOpenChange={setIsHeadDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Thiết lập người đứng đầu đơn vị</DialogTitle>
+            <DialogDescription>
+              Chọn nhân viên làm người đứng đầu đơn vị {selectedDepartmentForHead?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="head-employee">Người đứng đầu</Label>
+              <Select 
+                value={formData.headId || ""} 
+                onValueChange={(value) => setFormData({ ...formData, headId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn nhân viên làm người đứng đầu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Không có người đứng đầu</SelectItem>
+                  {selectedDepartmentForHead && getDepartmentEmployeesForSelect(selectedDepartmentForHead.id).map(employee => (
+                    <SelectItem key={employee.id} value={employee.id}>
+                      {employee.name} ({employee.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedDepartmentForHead && getDepartmentEmployeesForSelect(selectedDepartmentForHead.id).length === 0 && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Không có nhân viên nào trong đơn vị này. Hãy thêm nhân viên vào đơn vị trước khi chọn người đứng đầu.
+                </p>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsHeadDialogOpen(false);
+              setSelectedDepartmentForHead(null);
+            }}>
+              Hủy
+            </Button>
+            <Button 
+              onClick={handleSaveDepartmentHead}
+              disabled={selectedDepartmentForHead && getDepartmentEmployeesForSelect(selectedDepartmentForHead.id).length === 0}
+            >
+              Lưu thay đổi
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

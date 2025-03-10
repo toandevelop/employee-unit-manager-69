@@ -18,6 +18,7 @@ export interface Department {
   code: string;
   name: string;
   foundingDate: string;
+  headId?: string;
   departmentEmployees: DepartmentEmployee[];
 }
 

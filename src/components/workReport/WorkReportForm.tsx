@@ -20,10 +20,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon, Save, Send } from "lucide-react";
 import { WorkReport } from "@/store/slices/workReportSlice";
 import { Employee } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Define the form schema
 const workReportSchema = z.object({
   employeeId: z.string().min(1, { message: "Vui lòng chọn nhân viên" }),
+  departmentId: z.string().min(1, { message: "Vui lòng chọn đơn vị" }),
   weekStartDate: z.string().min(1, { message: "Vui lòng chọn ngày bắt đầu tuần" }),
   weekEndDate: z.string().min(1, { message: "Vui lòng chọn ngày kết thúc tuần" }),
   tasksCompleted: z.string().min(1, { message: "Vui lòng nhập công việc đã hoàn thành" }),
@@ -47,8 +49,10 @@ export default function WorkReportForm({
   onSubmit,
   onCancel,
 }: WorkReportFormProps) {
-  const { employees } = useAppStore();
+  const { employees, departments, departmentEmployees } = useAppStore();
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>("");
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
 
   // Get current week dates if creating a new report
   const getCurrentWeekDates = () => {
@@ -71,6 +75,7 @@ export default function WorkReportForm({
   // Initialize form with default values or existing report
   const defaultValues: WorkReportFormValues = {
     employeeId: employeeId || workReport?.employeeId || "",
+    departmentId: "",
     weekStartDate: workReport?.weekStartDate || weekDates.start,
     weekEndDate: workReport?.weekEndDate || weekDates.end,
     tasksCompleted: workReport?.tasksCompleted || "",
@@ -91,13 +96,57 @@ export default function WorkReportForm({
       const employee = employees.find(emp => emp.id === currentEmployeeId);
       if (employee) {
         setSelectedEmployee(employee);
+        
+        // Find department of the employee
+        const employeeDepartment = departmentEmployees.find(de => de.employeeId === currentEmployeeId);
+        if (employeeDepartment) {
+          setSelectedDepartmentId(employeeDepartment.departmentId);
+          form.setValue("departmentId", employeeDepartment.departmentId);
+        }
       }
     }
-  }, [employeeId, workReport, employees, form]);
+  }, [employeeId, workReport, employees, departmentEmployees, form]);
+
+  // Update filtered employees when department changes
+  useEffect(() => {
+    if (selectedDepartmentId) {
+      const departmentEmployeeIds = departmentEmployees
+        .filter(de => de.departmentId === selectedDepartmentId)
+        .map(de => de.employeeId);
+      
+      const employeesInDepartment = employees.filter(emp => 
+        departmentEmployeeIds.includes(emp.id)
+      );
+      
+      setFilteredEmployees(employeesInDepartment);
+      
+      // Clear employee selection if the current employee is not in this department
+      const currentEmployeeId = form.getValues().employeeId;
+      if (currentEmployeeId && !departmentEmployeeIds.includes(currentEmployeeId)) {
+        form.setValue("employeeId", "");
+        setSelectedEmployee(null);
+      }
+    } else {
+      setFilteredEmployees([]);
+    }
+  }, [selectedDepartmentId, departmentEmployees, employees, form]);
 
   // Handle form submission
   const handleSubmit = (values: WorkReportFormValues, isDraft: boolean) => {
     onSubmit(values, isDraft);
+  };
+
+  // Handle department change
+  const handleDepartmentChange = (departmentId: string) => {
+    setSelectedDepartmentId(departmentId);
+    form.setValue("departmentId", departmentId);
+  };
+
+  // Handle employee change
+  const handleEmployeeChange = (employeeId: string) => {
+    form.setValue("employeeId", employeeId);
+    const employee = employees.find(emp => emp.id === employeeId);
+    setSelectedEmployee(employee || null);
   };
 
   return (
@@ -106,6 +155,40 @@ export default function WorkReportForm({
         <Card className="bg-card border rounded-lg shadow-sm">
           <CardContent className="p-6">
             <div className="space-y-4">
+              {/* Department selection */}
+              {!employeeId && (
+                <FormField
+                  control={form.control}
+                  name="departmentId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Đơn vị</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            handleDepartmentChange(value);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn đơn vị" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {departments.map((department) => (
+                              <SelectItem key={department.id} value={department.id}>
+                                {department.name} ({department.code})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               {/* Employee selection - show if employeeId is not provided */}
               {!employeeId && (
                 <FormField
@@ -115,22 +198,31 @@ export default function WorkReportForm({
                     <FormItem>
                       <FormLabel>Nhân viên</FormLabel>
                       <FormControl>
-                        <select
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            const employee = employees.find(emp => emp.id === e.target.value);
-                            setSelectedEmployee(employee || null);
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            handleEmployeeChange(value);
                           }}
+                          disabled={!selectedDepartmentId}
                         >
-                          <option value="">Chọn nhân viên</option>
-                          {employees.map((employee) => (
-                            <option key={employee.id} value={employee.id}>
-                              {employee.name} ({employee.code})
-                            </option>
-                          ))}
-                        </select>
+                          <SelectTrigger>
+                            <SelectValue placeholder={selectedDepartmentId ? "Chọn nhân viên" : "Chọn đơn vị trước"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filteredEmployees.length > 0 ? (
+                              filteredEmployees.map((employee) => (
+                                <SelectItem key={employee.id} value={employee.id}>
+                                  {employee.name} ({employee.code})
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="" disabled>
+                                {selectedDepartmentId ? "Không có nhân viên trong đơn vị này" : "Chọn đơn vị trước"}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 export interface WorkReport {
   id: string;
   employeeId: string;
+  departmentId?: string;
   weekStartDate: string;
   weekEndDate: string;
   tasksCompleted: string;

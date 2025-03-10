@@ -1,8 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Users, Building2, Briefcase, FileText, FileType, Menu, X, ChevronDown, ChevronRight, LayoutDashboard, GraduationCap, BookOpen } from 'lucide-react';
+import { Toast } from "@/components/ui/toast";
+import { Toaster } from "@/components/ui/toaster";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -238,6 +241,32 @@ const Layout = ({ children }: LayoutProps) => {
           {children}
         </div>
       </main>
+
+      {/* Custom Toaster with exit button */}
+      <Toaster>
+        {(props) => {
+          const { toast, dismissToast } = props;
+          return (
+            <Toast {...props}>
+              <div className="flex items-start justify-between w-full gap-2">
+                <div className="flex-1">{toast.title}</div>
+                <button 
+                  onClick={() => dismissToast(toast.id)} 
+                  className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                  aria-label="Đóng thông báo"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              {toast.description && (
+                <div className="text-sm text-muted-foreground mt-1">
+                  {toast.description}
+                </div>
+              )}
+            </Toast>
+          );
+        }}
+      </Toaster>
     </div>
   );
 };
