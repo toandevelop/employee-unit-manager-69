@@ -1,9 +1,11 @@
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EmployeeFormValues } from './types';
-import { User, MapPin, Phone, CreditCard, Calendar, ImagePlus } from 'lucide-react';
+import { User, MapPin, Phone, CreditCard, Calendar, ImagePlus, FileImage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useState } from 'react';
 
 interface BasicInfoFieldsetProps {
   formData: EmployeeFormValues;
@@ -11,6 +13,8 @@ interface BasicInfoFieldsetProps {
 }
 
 export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFieldsetProps) => {
+  const [idPhotoError, setIdPhotoError] = useState<string | null>(null);
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -22,12 +26,78 @@ export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFiel
     }
   };
 
+  const handleIdPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Reset error
+      setIdPhotoError(null);
+      
+      // Create image element to check dimensions
+      const img = new Image();
+      img.onload = () => {
+        // Check if the aspect ratio is approximately 3:4 (with some tolerance)
+        const aspectRatio = img.width / img.height;
+        const targetRatio = 3 / 4;
+        const tolerance = 0.1; // 10% tolerance
+
+        if (Math.abs(aspectRatio - targetRatio) > tolerance) {
+          setIdPhotoError("Ảnh không đúng tỷ lệ 3x4. Vui lòng chọn ảnh khác.");
+          return;
+        }
+        
+        // If we get here, the image is valid - compress and save it
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set dimensions for the canvas (standardize to reasonable size while maintaining aspect ratio)
+        const maxWidth = 300;
+        const maxHeight = 400;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+        
+        if (height > maxHeight) {
+          width = (maxHeight / height) * width;
+          height = maxHeight;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw the image on the canvas
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Get the compressed image as a data URL
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        
+        handleInputChange('idPhoto', compressedDataUrl);
+      };
+      
+      img.onerror = () => {
+        setIdPhotoError("Không thể đọc tệp ảnh. Vui lòng chọn ảnh khác.");
+      };
+      
+      // Load the image data
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
       <h3 className="text-lg font-medium border-b pb-2 mb-4">Thông tin cơ bản</h3>
 
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center gap-10 mb-6">
+        {/* Avatar upload */}
         <div className="text-center space-y-2">
+          <p className="text-sm text-muted-foreground mb-2">Ảnh đại diện</p>
           <Avatar className="w-24 h-24 mx-auto">
             <AvatarImage src={formData.avatar} />
             <AvatarFallback>
@@ -49,6 +119,42 @@ export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFiel
               onChange={handleAvatarChange}
             />
           </div>
+        </div>
+
+        {/* 3x4 ID Photo upload */}
+        <div className="text-center space-y-2">
+          <p className="text-sm text-muted-foreground mb-2">Ảnh thẻ 3x4</p>
+          <div className="w-24 h-32 mx-auto border rounded-md overflow-hidden">
+            {formData.idPhoto ? (
+              <img 
+                src={formData.idPhoto} 
+                alt="Ảnh thẻ 3x4" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-muted">
+                <FileImage className="w-10 h-10 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="idPhoto" className="cursor-pointer">
+              <div className="flex items-center gap-2 text-sm text-primary hover:text-primary/80">
+                <FileImage className="w-4 h-4" />
+                <span>Tải lên ảnh thẻ 3x4</span>
+              </div>
+            </Label>
+            <Input
+              id="idPhoto"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleIdPhotoChange}
+            />
+          </div>
+          {idPhotoError && (
+            <p className="text-xs text-destructive mt-1">{idPhotoError}</p>
+          )}
         </div>
       </div>
       

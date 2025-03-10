@@ -1,4 +1,6 @@
+
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { 
   User, 
   Building2, 
@@ -9,7 +11,9 @@ import {
   Pencil, 
   Trash2, 
   GraduationCap,
-  BookOpen
+  BookOpen,
+  FileImage,
+  X
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Department, Employee, Position } from '@/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -37,6 +42,8 @@ const EmployeeCard = ({
   onEditClick,
   onDeleteClick
 }: EmployeeCardProps) => {
+  const [showIdPhoto, setShowIdPhoto] = useState(false);
+  
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
@@ -48,7 +55,10 @@ const EmployeeCard = ({
         <CardHeader className="bg-primary/5 pb-4">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-4">
-              <Avatar className="w-12 h-12">
+              <Avatar 
+                className="w-12 h-12 cursor-pointer" 
+                onClick={() => employee.idPhoto && setShowIdPhoto(true)}
+              >
                 <AvatarImage src={employee.avatar} />
                 <AvatarFallback>
                   <User className="w-6 h-6 text-muted-foreground" />
@@ -58,6 +68,16 @@ const EmployeeCard = ({
                 <CardTitle className="font-bold">{employee.name}</CardTitle>
                 <CardDescription className="mt-1">
                   {employee.code}
+                  {employee.idPhoto && (
+                    <Button 
+                      variant="link" 
+                      className="text-xs p-0 h-auto text-muted-foreground hover:text-primary ml-2"
+                      onClick={() => setShowIdPhoto(true)}
+                    >
+                      <FileImage className="h-3 w-3 mr-1" />
+                      Xem ảnh thẻ
+                    </Button>
+                  )}
                 </CardDescription>
               </div>
             </div>
@@ -178,6 +198,31 @@ const EmployeeCard = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog for displaying the ID photo */}
+      {employee.idPhoto && (
+        <Dialog open={showIdPhoto} onOpenChange={setShowIdPhoto}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex justify-between items-center">
+                <span>Ảnh thẻ 3x4 - {employee.name}</span>
+                <Button variant="ghost" size="icon" onClick={() => setShowIdPhoto(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex justify-center p-4">
+              <div className="border rounded-md overflow-hidden max-w-[300px] max-h-[400px]">
+                <img 
+                  src={employee.idPhoto} 
+                  alt={`Ảnh thẻ 3x4 của ${employee.name}`}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </motion.div>
   );
 };

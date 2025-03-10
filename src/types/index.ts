@@ -7,7 +7,8 @@ export interface Employee {
   phone: string;
   identityCard: string;
   contractDate: string;
-  avatar?: string; // Add avatar field
+  avatar?: string;
+  idPhoto?: string; // Add ID photo field for 3x4 format photo
   departmentEmployees: DepartmentEmployee[];
   positionEmployees: PositionEmployee[];
   academicDegreeId?: string;

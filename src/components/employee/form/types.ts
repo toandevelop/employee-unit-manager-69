@@ -13,6 +13,7 @@ export const formSchema = z.object({
   academicDegreeId: z.string().min(1, "Học vị không được để trống"),
   academicTitleId: z.string().optional(),
   avatar: z.string().optional(),
+  idPhoto: z.string().optional(),
 });
 
 export type EmployeeFormValues = z.infer<typeof formSchema>;
