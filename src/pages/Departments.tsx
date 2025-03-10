@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -52,13 +51,11 @@ const DepartmentsPage = () => {
   const [isHeadDialogOpen, setIsHeadDialogOpen] = useState(false);
   const [selectedDepartmentForHead, setSelectedDepartmentForHead] = useState<Department | null>(null);
   
-  // Filter departments based on search query
   const filteredDepartments = departments.filter(department => 
     department.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     department.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  // Helper function to get employees for a department
   const getDepartmentEmployees = (departmentId: string) => {
     const employeeIds = departmentEmployees
       .filter(de => de.departmentId === departmentId)
@@ -67,13 +64,11 @@ const DepartmentsPage = () => {
     return employees.filter(employee => employeeIds.includes(employee.id));
   };
   
-  // Helper function to get the head of a department
   const getDepartmentHead = (headId?: string) => {
     if (!headId) return null;
     return employees.find(employee => employee.id === headId);
   };
   
-  // Reset form data
   const resetFormData = () => {
     setFormData({
       code: '',
@@ -83,14 +78,12 @@ const DepartmentsPage = () => {
     });
   };
   
-  // Handle adding a new department
   const handleAddDepartment = () => {
     addDepartment(formData);
     setIsAddDialogOpen(false);
     resetFormData();
   };
   
-  // Set up form for editing
   const handleEditClick = (department: Department) => {
     setFormData({
       code: department.code,
@@ -103,7 +96,6 @@ const DepartmentsPage = () => {
     setIsEditDialogOpen(true);
   };
   
-  // Handle updating a department
   const handleUpdateDepartment = () => {
     if (editingDepartment) {
       updateDepartment(editingDepartment, formData);
@@ -113,7 +105,6 @@ const DepartmentsPage = () => {
     }
   };
   
-  // Handle setting department head
   const handleSetDepartmentHead = (department: Department) => {
     setSelectedDepartmentForHead(department);
     setFormData(prev => ({
@@ -123,7 +114,6 @@ const DepartmentsPage = () => {
     setIsHeadDialogOpen(true);
   };
   
-  // Save department head
   const handleSaveDepartmentHead = () => {
     if (selectedDepartmentForHead) {
       updateDepartment(selectedDepartmentForHead.id, { headId: formData.headId || undefined });
@@ -132,7 +122,6 @@ const DepartmentsPage = () => {
     }
   };
   
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -148,7 +137,6 @@ const DepartmentsPage = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
   };
   
-  // Get department employees for head selection
   const getDepartmentEmployeesForSelect = (departmentId: string) => {
     if (!departmentId || !selectedDepartmentForHead) return employees;
     return getDepartmentEmployees(departmentId);
@@ -353,7 +341,6 @@ const DepartmentsPage = () => {
         )}
       </motion.div>
       
-      {/* Edit Department Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -406,7 +393,6 @@ const DepartmentsPage = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Set Department Head Dialog */}
       <Dialog open={isHeadDialogOpen} onOpenChange={setIsHeadDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -427,7 +413,7 @@ const DepartmentsPage = () => {
                   <SelectValue placeholder="Chọn nhân viên làm người đứng đầu" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Không có người đứng đầu</SelectItem>
+                  <SelectItem value="none">Không có người đứng đầu</SelectItem>
                   {selectedDepartmentForHead && getDepartmentEmployeesForSelect(selectedDepartmentForHead.id).map(employee => (
                     <SelectItem key={employee.id} value={employee.id}>
                       {employee.name} ({employee.code})

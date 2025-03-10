@@ -38,6 +38,11 @@ export const createDepartmentSlice = (
   
   updateDepartment: (id, departmentData) => {
     set((state: any) => {
+      // Process headId - convert "none" to undefined
+      if (departmentData.headId === "none") {
+        departmentData.headId = undefined;
+      }
+      
       const updatedDepartments = state.departments.map(dept => 
         dept.id === id ? { ...dept, ...departmentData } : dept
       );
