@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Users, Building2, Briefcase, FileText, FileType, Menu, X, ChevronDown, ChevronRight, LayoutDashboard, GraduationCap, BookOpen } from 'lucide-react';
+import { Users, Building2, Briefcase, FileText, FileType, Menu, X, ChevronDown, ChevronRight, LayoutDashboard, GraduationCap, BookOpen, IdCard } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -46,6 +46,7 @@ const Layout = ({ children }: LayoutProps) => {
     { path: '/employees', label: 'Quản lý nhân viên', icon: <Users className="h-5 w-5" /> },
     { path: '/contracts', label: 'Quản lý hợp đồng', icon: <FileText className="h-5 w-5" /> },
     { path: '/work-reports', label: 'Báo cáo công việc', icon: <FileText className="h-5 w-5" /> },
+    { path: '/employee-card', label: 'In thẻ nhân viên', icon: <IdCard className="h-5 w-5" /> },
   ];
   
   const categories: NavigationCategory[] = [
