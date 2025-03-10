@@ -26,7 +26,7 @@ type StoreState = ReturnType<typeof createEmployeeSlice> &
 export const useAppStore = create<StoreState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set, get, api) => ({
         ...createEmployeeSlice(set, get),
         ...createDepartmentSlice(set, get),
         ...createPositionSlice(set, get),
