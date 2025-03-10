@@ -1,5 +1,4 @@
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Employee } from "@/types";
@@ -13,6 +12,7 @@ import { AcademicFields } from "./form/AcademicFields";
 import { DepartmentsSection } from "./form/DepartmentsSection";
 import { PositionsSection } from "./form/PositionsSection";
 import { FormActions } from "./form/FormActions";
+import { EmployeeFormContent } from "./form/EmployeeFormContent";
 
 interface EmployeeFormProps {
   employee?: Employee;
@@ -34,57 +34,57 @@ export default function EmployeeForm({
     academicTitles 
   } = useAppStore();
 
-  const form = useForm<EmployeeFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      code: employee?.code || "",
-      name: employee?.name || "",
-      address: employee?.address || "",
-      phone: employee?.phone || "",
-      identityCard: employee?.identityCard || "",
-      contractDate: employee?.contractDate || "",
-      departmentIds: employee
-        ? departmentEmployees
-            .filter((de) => de.employeeId === employee.id)
-            .map((de) => de.departmentId)
-        : [],
-      positionIds: employee
-        ? positionEmployees
-            .filter((pe) => pe.employeeId === employee.id)
-            .map((pe) => pe.positionId)
-        : [],
-      academicDegreeId: employee?.academicDegreeId || "",
-      academicTitleId: employee?.academicTitleId || "",
-    },
+  // Use state to manage the form data, allowing both controlled components and react-hook-form
+  const [formData, setFormData] = useState<EmployeeFormValues>({
+    code: employee?.code || "",
+    name: employee?.name || "",
+    address: employee?.address || "",
+    phone: employee?.phone || "",
+    identityCard: employee?.identityCard || "",
+    contractDate: employee?.contractDate || "",
+    departmentIds: employee
+      ? departmentEmployees
+          .filter((de) => de.employeeId === employee.id)
+          .map((de) => de.departmentId)
+      : [],
+    positionIds: employee
+      ? positionEmployees
+          .filter((pe) => pe.employeeId === employee.id)
+          .map((pe) => pe.positionId)
+      : [],
+    academicDegreeId: employee?.academicDegreeId || "",
+    academicTitleId: employee?.academicTitleId || "",
   });
 
-  useEffect(() => {
-    if (employee) {
-      // Populate department IDs
-      const departmentIds = departmentEmployees
-        .filter((de) => de.employeeId === employee.id)
-        .map((de) => de.departmentId);
-      form.setValue("departmentIds", departmentIds);
+  const form = useForm<EmployeeFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: formData,
+  });
 
-      // Populate position IDs
-      const positionIds = positionEmployees
-        .filter((pe) => pe.employeeId === employee.id)
-        .map((pe) => pe.positionId);
-      form.setValue("positionIds", positionIds);
-      
-      // Populate academic degree and title
-      if (employee.academicDegreeId) {
-        form.setValue("academicDegreeId", employee.academicDegreeId);
-      }
-      if (employee.academicTitleId) {
-        form.setValue("academicTitleId", employee.academicTitleId);
-      }
+  // Keep react-hook-form synchronized with our formData state
+  useEffect(() => {
+    if (formData) {
+      Object.entries(formData).forEach(([key, value]) => {
+        form.setValue(key as any, value);
+      });
     }
-  }, [employee, departmentEmployees, positionEmployees, form]);
+  }, [formData, form]);
+
+  // Handle form submission both from tag-based input and react-hook-form
+  const handleSubmitForm = () => {
+    form.handleSubmit((values) => {
+      // Merge values with formData to ensure all tag-based selections are included
+      onSubmit({
+        ...values,
+        departmentIds: formData.departmentIds,
+        positionIds: formData.positionIds
+      });
+    })();
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmitForm(); }} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <BasicInfoFields form={form} />
           
@@ -100,10 +100,11 @@ export default function EmployeeForm({
           />
         </div>
 
-        <Accordion type="single" collapsible className="w-full">
-          <DepartmentsSection form={form} departments={departments} />
-          <PositionsSection form={form} positions={positions} />
-        </Accordion>
+        {/* Use the new EmployeeFormContent component for tag-based selection */}
+        <EmployeeFormContent 
+          formData={formData}
+          setFormData={setFormData}
+        />
 
         <FormActions onCancel={onCancel} />
       </form>
