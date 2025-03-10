@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useAppStore } from '@/store';
 import { motion } from 'framer-motion';
@@ -15,22 +16,67 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Check, Printer, Search, User, Download } from 'lucide-react';
+import { Check, Printer, Search, User, Download, Settings, Plus } from 'lucide-react';
 import { useEmployeeHelpers } from '@/hooks/useEmployeeHelpers';
 import { Employee } from '@/types';
 import EmployeeCardTemplate from '@/components/employee/EmployeeCardTemplate';
 import PrintableCard from '@/components/employee/PrintableCard';
+import CardTemplateEditor from '@/components/employee/CardTemplateEditor';
 import { toast } from 'sonner';
 import { CardTemplate } from '@/types/cardTemplate';
 
+// Template store slice
+const useTemplateStore = () => {
+  const store = useAppStore();
+  return {
+    cardTemplates: store.cardTemplates || [],
+    addCardTemplate: (template: CardTemplate) => {
+      const newTemplate = { ...template, id: crypto.randomUUID() };
+      store.setCardTemplates([...store.cardTemplates || [], newTemplate]);
+      return newTemplate;
+    },
+    updateCardTemplate: (template: CardTemplate) => {
+      store.setCardTemplates(
+        (store.cardTemplates || []).map(t => 
+          t.id === template.id ? template : t
+        )
+      );
+    },
+    deleteCardTemplate: (id: string) => {
+      store.setCardTemplates(
+        (store.cardTemplates || []).filter(t => t.id !== id)
+      );
+    }
+  };
+};
+
 const EmployeeCardPage: React.FC = () => {
-  const { employees, departments } = useAppStore();
+  const { employees, departments, organizations } = useAppStore();
+  const { cardTemplates, addCardTemplate, updateCardTemplate } = useTemplateStore();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('default');
+  const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
+  const [newTemplateOpen, setNewTemplateOpen] = useState(false);
+  const [currentEditTemplate, setCurrentEditTemplate] = useState<CardTemplate | null>(null);
+  
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Find the selected template
+  const activeTemplate = cardTemplates.find(t => t.id === selectedTemplate) || {
+    id: 'default',
+    name: 'Default Template',
+    organizationId: '',
+    backgroundColor: 'white',
+    headerColor: 'bg-primary',
+    textColor: 'text-gray-800',
+    qrCodePosition: 'bottom',
+    showLogo: true
+  };
+
+  // Filter employees based on search and department
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                         employee.code.toLowerCase().includes(searchTerm.toLowerCase());
@@ -63,30 +109,62 @@ const EmployeeCardPage: React.FC = () => {
     }
   };
 
-  // Mock templates - in a real app, these would come from your store/API
-  const cardTemplates: CardTemplate[] = [
-    {
-      id: 'default',
-      name: 'Default Template',
-      organizationId: '',
+  const handleEditTemplate = () => {
+    setCurrentEditTemplate(activeTemplate);
+    setTemplateEditorOpen(true);
+  };
+
+  const handleNewTemplate = () => {
+    const newTemplate: CardTemplate = {
+      id: '',
+      name: 'Mẫu thẻ mới',
+      organizationId: organizations[0]?.id || '',
       backgroundColor: 'white',
       headerColor: 'bg-primary',
       textColor: 'text-gray-800',
       qrCodePosition: 'bottom',
       showLogo: true
-    },
-    {
-      id: 'modern',
-      name: 'Modern Template',
-      organizationId: '',
-      backgroundColor: '#f8f9fa',
-      headerColor: 'bg-blue-600',
-      textColor: 'text-gray-900',
-      qrCodePosition: 'right',
-      showLogo: true
-    },
-    // Add more templates as needed
-  ];
+    };
+    setCurrentEditTemplate(newTemplate);
+    setNewTemplateOpen(true);
+  };
+
+  const handleSaveTemplate = (template: CardTemplate) => {
+    if (template.id) {
+      updateCardTemplate(template);
+      toast.success('Đã cập nhật mẫu thẻ');
+    } else {
+      const newTemplate = addCardTemplate(template);
+      setSelectedTemplate(newTemplate.id);
+      toast.success('Đã tạo mẫu thẻ mới');
+    }
+  };
+
+  // Get all available templates based on filters
+  const availableTemplates = cardTemplates.length > 0 
+    ? cardTemplates 
+    : [
+        {
+          id: 'default',
+          name: 'Default Template',
+          organizationId: '',
+          backgroundColor: 'white',
+          headerColor: 'bg-primary',
+          textColor: 'text-gray-800',
+          qrCodePosition: 'bottom',
+          showLogo: true
+        },
+        {
+          id: 'modern',
+          name: 'Modern Template',
+          organizationId: '',
+          backgroundColor: '#f8f9fa',
+          headerColor: 'bg-blue-600',
+          textColor: 'text-gray-900',
+          qrCodePosition: 'right',
+          showLogo: true
+        }
+      ];
 
   return (
     <div className="space-y-6">
@@ -149,21 +227,41 @@ const EmployeeCardPage: React.FC = () => {
               </SelectContent>
             </Select>
             
-            <Select
-              value={selectedTemplate}
-              onValueChange={setSelectedTemplate}
-            >
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Chọn mẫu thẻ" />
-              </SelectTrigger>
-              <SelectContent>
-                {cardTemplates.map(template => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select
+                value={selectedTemplate}
+                onValueChange={setSelectedTemplate}
+              >
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Chọn mẫu thẻ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTemplates.map(template => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={handleEditTemplate}
+                title="Chỉnh sửa mẫu thẻ"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="icon"
+                onClick={handleNewTemplate}
+                title="Tạo mẫu thẻ mới"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -173,7 +271,7 @@ const EmployeeCardPage: React.FC = () => {
           <EmployeeCard
             key={employee.id}
             employee={employee}
-            template={cardTemplates.find(t => t.id === selectedTemplate)}
+            template={activeTemplate}
             isSelected={selectedEmployees.includes(employee.id)}
             onToggleSelect={() => toggleEmployeeSelection(employee.id)}
           />
@@ -200,12 +298,33 @@ const EmployeeCardPage: React.FC = () => {
               <PrintableCard 
                 key={id} 
                 employee={employee}
-                template={cardTemplates.find(t => t.id === selectedTemplate)}
+                template={activeTemplate}
               />
             );
           })}
         </div>
       </div>
+      
+      {/* Template Editor Dialogs */}
+      {currentEditTemplate && (
+        <>
+          <CardTemplateEditor
+            open={templateEditorOpen}
+            onOpenChange={setTemplateEditorOpen}
+            template={currentEditTemplate}
+            onSave={handleSaveTemplate}
+            isNew={false}
+          />
+          
+          <CardTemplateEditor
+            open={newTemplateOpen}
+            onOpenChange={setNewTemplateOpen}
+            template={currentEditTemplate}
+            onSave={handleSaveTemplate}
+            isNew={true}
+          />
+        </>
+      )}
     </div>
   );
 };
