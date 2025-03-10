@@ -7,6 +7,7 @@ import { createPositionSlice } from './slices/positionSlice';
 import { createContractSlice } from './slices/contractSlice';
 import { createAcademicSlice } from './slices/academicSlice';
 import { createRelationshipSlice } from './slices/relationshipSlice';
+import { createWorkReportSlice } from './slices/workReportSlice';
 
 // Define the store type to include all slice properties
 type StoreState = ReturnType<typeof createEmployeeSlice> &
@@ -14,7 +15,8 @@ type StoreState = ReturnType<typeof createEmployeeSlice> &
   ReturnType<typeof createPositionSlice> &
   ReturnType<typeof createContractSlice> &
   ReturnType<typeof createAcademicSlice> &
-  ReturnType<typeof createRelationshipSlice>;
+  ReturnType<typeof createRelationshipSlice> &
+  ReturnType<typeof createWorkReportSlice>;
 
 // Combine all slices into a single store
 export const useAppStore = create<StoreState>()(
@@ -27,6 +29,7 @@ export const useAppStore = create<StoreState>()(
         ...createContractSlice(set, get),
         ...createAcademicSlice(set, get),
         ...createRelationshipSlice(set, get),
+        ...createWorkReportSlice(set, get),
       }),
       {
         name: 'employee-management-storage',
@@ -40,6 +43,7 @@ export const useAppStore = create<StoreState>()(
           contracts: state.contracts,
           academicDegrees: state.academicDegrees,
           academicTitles: state.academicTitles,
+          workReports: state.workReports,
         }),
         version: 1,
         storage: {

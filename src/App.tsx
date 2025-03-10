@@ -17,6 +17,9 @@ import EditContractPage from "./pages/EditContract";
 import ContractTypesPage from "./pages/ContractTypes";
 import AcademicDegreesPage from "./pages/AcademicDegrees";
 import AcademicTitlesPage from "./pages/AcademicTitles";
+import WorkReportsPage from "./pages/WorkReports";
+import AddWorkReportPage from "./pages/AddWorkReport";
+import EditWorkReportPage from "./pages/EditWorkReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +44,10 @@ const App = () => (
               <Route path="/contract-types" element={<ContractTypesPage />} />
               <Route path="/academic-degrees" element={<AcademicDegreesPage />} />
               <Route path="/academic-titles" element={<AcademicTitlesPage />} />
+              <Route path="/work-reports" element={<WorkReportsPage />} />
+              <Route path="/work-reports/add" element={<AddWorkReportPage />} />
+              <Route path="/work-reports/add/:employeeId" element={<AddWorkReportPage />} />
+              <Route path="/work-reports/edit/:id" element={<EditWorkReportPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>
