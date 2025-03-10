@@ -1,4 +1,3 @@
-
 export interface Employee {
   id: string;
   code: string;
@@ -20,9 +19,11 @@ export interface Organization {
   code: string;
   name: string;
   foundingDate: string;
-  description?: string;
-  logo?: string;
+  description: string;
   departments: Department[];
+  logo1?: string; // Primary logo
+  logo2?: string; // Secondary logo
+  logo3?: string; // Tertiary logo
 }
 
 export interface Department {

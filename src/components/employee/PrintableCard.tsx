@@ -1,3 +1,4 @@
+
 import React, { forwardRef } from 'react';
 import { Employee } from '@/types';
 import { CardTemplate } from '@/types/cardTemplate';
@@ -68,9 +69,9 @@ const PrintableCard = forwardRef<HTMLDivElement, PrintableCardProps>(
             ? activeTemplate.headerColor
             : undefined}
         >
-          {activeTemplate.showLogo && organization?.logo && (
+          {activeTemplate.showLogo && organization?.logo1 && (
             <img 
-              src={organization.logo} 
+              src={organization.logo1} 
               alt={organizationName}
               style={{ height: '16px', marginBottom: '4px', display: 'inline-block' }}
             />

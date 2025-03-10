@@ -11,7 +11,8 @@ import {
   Pencil, 
   Trash2,
   Building,
-  FolderTree
+  FolderTree,
+  ImageIcon
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,6 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppStore } from '@/store';
 import { Department, Organization } from '@/types';
@@ -42,6 +42,8 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { format } from 'date-fns';
+import OrganizationMenu from '@/components/organization/OrganizationMenu';
+import LogoManagerDialog from '@/components/organization/LogoManagerDialog';
 
 const OrganizationsPage = () => {
   const navigate = useNavigate();
@@ -50,6 +52,7 @@ const OrganizationsPage = () => {
     departments,
     addOrganization, 
     updateOrganization, 
+    updateOrganizationLogo,
     deleteOrganization,
     addDepartment,
   } = useAppStore();
@@ -58,6 +61,7 @@ const OrganizationsPage = () => {
   const [isAddOrgDialogOpen, setIsAddOrgDialogOpen] = useState(false);
   const [isEditOrgDialogOpen, setIsEditOrgDialogOpen] = useState(false);
   const [isAddDeptDialogOpen, setIsAddDeptDialogOpen] = useState(false);
+  const [isLogoManagerOpen, setIsLogoManagerOpen] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   
   const [orgFormData, setOrgFormData] = useState<{
@@ -148,6 +152,11 @@ const OrganizationsPage = () => {
     });
     setIsAddDeptDialogOpen(true);
   };
+
+  const handleManageLogos = (org: Organization) => {
+    setSelectedOrgId(org.id);
+    setIsLogoManagerOpen(true);
+  };
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -167,6 +176,11 @@ const OrganizationsPage = () => {
   // Get departments for a specific organization
   const getOrganizationDepartments = (orgId: string) => {
     return departments.filter(dept => dept.organizationId === orgId);
+  };
+
+  // Get selected organization for logo manager
+  const getSelectedOrganization = () => {
+    return organizations.find(org => org.id === selectedOrgId) || organizations[0];
   };
   
   return (
@@ -273,7 +287,15 @@ const OrganizationsPage = () => {
                 <CardHeader className="bg-primary/5 pb-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
-                      <Building2 className="h-8 w-8 text-primary" />
+                      {organization.logo1 ? (
+                        <img 
+                          src={organization.logo1} 
+                          alt={organization.name}
+                          className="h-10 w-10 object-contain"
+                        />
+                      ) : (
+                        <Building2 className="h-8 w-8 text-primary" />
+                      )}
                       <div>
                         <CardTitle className="font-bold text-xl">{organization.name}</CardTitle>
                         <CardDescription className="mt-1">
@@ -287,41 +309,20 @@ const OrganizationsPage = () => {
                         variant="outline"
                         size="icon"
                         className="h-8 w-8 text-primary"
-                        onClick={() => handleEditClick(organization)}
+                        onClick={() => handleManageLogos(organization)}
+                        title="Quản lý logo"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <ImageIcon className="h-4 w-4" />
                       </Button>
                       
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="h-8 w-8 text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Xác nhận xóa tổ chức</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Bạn có chắc chắn muốn xóa tổ chức "{organization.name}"? Hành động này không thể hoàn tác.
-                              {orgDepartments.length > 0 && (
-                                <div className="mt-2 text-destructive font-medium">
-                                  Lưu ý: Không thể xóa tổ chức đang có phòng ban trực thuộc.
-                                </div>
-                              )}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction 
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={() => deleteOrganization(organization.id)}
-                              disabled={orgDepartments.length > 0}
-                            >
-                              Xóa
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <OrganizationMenu 
+                        organization={organization}
+                        onEdit={() => handleEditClick(organization)}
+                        onAddDepartment={() => handleAddDeptClick(organization.id)}
+                        onManageLogos={() => handleManageLogos(organization)}
+                        onDelete={() => deleteOrganization(organization.id)}
+                        hasDepartments={orgDepartments.length > 0}
+                      />
                     </div>
                   </div>
                 </CardHeader>
@@ -525,6 +526,16 @@ const OrganizationsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Logo Manager Dialog */}
+      {selectedOrgId && (
+        <LogoManagerDialog
+          open={isLogoManagerOpen}
+          onOpenChange={setIsLogoManagerOpen}
+          organization={getSelectedOrganization()}
+          onLogoChange={updateOrganizationLogo}
+        />
+      )}
     </div>
   );
 };

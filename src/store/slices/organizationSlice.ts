@@ -10,7 +10,10 @@ const initialOrganizations: Organization[] = [
     name: "Trường đại học Nam Cần Thơ",
     foundingDate: "2013-05-20",
     description: "Trường đại học tư thục tại Cần Thơ",
-    departments: []
+    departments: [],
+    logo1: "",
+    logo2: "",
+    logo3: ""
   }
 ];
 
@@ -49,6 +52,21 @@ export const createOrganizationSlice = (
       );
       
       toast.success("Cập nhật thông tin tổ chức thành công");
+      
+      return {
+        organizations: updatedOrganizations
+      };
+    });
+  },
+  
+  // Update organization logo
+  updateOrganizationLogo: (id: string, logoType: 'logo1' | 'logo2' | 'logo3', logoUrl: string) => {
+    set((state: any) => {
+      const updatedOrganizations = state.organizations.map((org: Organization) => 
+        org.id === id ? { ...org, [logoType]: logoUrl } : org
+      );
+      
+      toast.success("Cập nhật logo tổ chức thành công");
       
       return {
         organizations: updatedOrganizations

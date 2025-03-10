@@ -46,9 +46,9 @@ const EmployeeCardTemplate: React.FC<EmployeeCardTemplateProps> = ({
     >
       {/* Card Header with Organization */}
       <div className={`w-full ${template.headerColor} text-white py-4 px-3 text-center flex flex-col items-center`}>
-        {template.showLogo && organization?.logo && (
+        {template.showLogo && organization?.logo1 && (
           <img 
-            src={organization.logo} 
+            src={organization.logo1} 
             alt={organizationName}
             className="h-8 mb-2"
           />
