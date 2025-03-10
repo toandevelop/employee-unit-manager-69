@@ -2,10 +2,11 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EmployeeFormValues } from './types';
-import { User, MapPin, Phone, CreditCard, Calendar, ImagePlus, FileImage } from 'lucide-react';
+import { User, MapPin, Phone, CreditCard, Calendar, ImagePlus, FileImage, Crop } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useState } from 'react';
+import { IdPhotoCropper } from './IdPhotoCropper';
 
 interface BasicInfoFieldsetProps {
   formData: EmployeeFormValues;
@@ -14,6 +15,7 @@ interface BasicInfoFieldsetProps {
 
 export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFieldsetProps) => {
   const [idPhotoError, setIdPhotoError] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,62 +34,76 @@ export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFiel
       // Reset error
       setIdPhotoError(null);
       
-      // Create image element to check dimensions
-      const img = new Image();
-      img.onload = () => {
-        // Check if the aspect ratio is approximately 3:4 (with some tolerance)
-        const aspectRatio = img.width / img.height;
-        const targetRatio = 3 / 4;
-        const tolerance = 0.1; // 10% tolerance
-
-        if (Math.abs(aspectRatio - targetRatio) > tolerance) {
-          setIdPhotoError("Ảnh không đúng tỷ lệ 3x4. Vui lòng chọn ảnh khác.");
-          return;
-        }
-        
-        // If we get here, the image is valid - compress and save it
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Set dimensions for the canvas (standardize to reasonable size while maintaining aspect ratio)
-        const maxWidth = 300;
-        const maxHeight = 400;
-        let width = img.width;
-        let height = img.height;
-        
-        if (width > maxWidth) {
-          height = (maxWidth / width) * height;
-          width = maxWidth;
-        }
-        
-        if (height > maxHeight) {
-          width = (maxHeight / height) * width;
-          height = maxHeight;
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Draw the image on the canvas
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        // Get the compressed image as a data URL
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        
-        handleInputChange('idPhoto', compressedDataUrl);
-      };
-      
-      img.onerror = () => {
-        setIdPhotoError("Không thể đọc tệp ảnh. Vui lòng chọn ảnh khác.");
-      };
-      
-      // Load the image data
+      // Read the file as data URL
       const reader = new FileReader();
       reader.onloadend = () => {
-        img.src = reader.result as string;
+        const imageDataUrl = reader.result as string;
+        
+        // Create image element to check dimensions
+        const img = new Image();
+        img.onload = () => {
+          // Check if the aspect ratio is approximately 3:4 (with some tolerance)
+          const aspectRatio = img.width / img.height;
+          const targetRatio = 3 / 4;
+          const tolerance = 0.1; // 10% tolerance
+
+          if (Math.abs(aspectRatio - targetRatio) > tolerance) {
+            // If the aspect ratio is incorrect, save the original image and open the cropper
+            handleInputChange('originalIdPhoto', imageDataUrl);
+            setShowCropper(true);
+            return;
+          }
+          
+          // If the aspect ratio is correct, save the image directly
+          processAndSaveImage(img);
+        };
+        
+        img.onerror = () => {
+          setIdPhotoError("Không thể đọc tệp ảnh. Vui lòng chọn ảnh khác.");
+        };
+        
+        img.src = imageDataUrl;
       };
+      
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCroppedImage = (croppedImageDataUrl: string) => {
+    handleInputChange('idPhoto', croppedImageDataUrl);
+    handleInputChange('originalIdPhoto', ''); // Clear the original image
+  };
+
+  const processAndSaveImage = (img: HTMLImageElement) => {
+    // Set dimensions for the canvas (standardize to reasonable size while maintaining aspect ratio)
+    const maxWidth = 300;
+    const maxHeight = 400;
+    let width = img.width;
+    let height = img.height;
+    
+    if (width > maxWidth) {
+      height = (maxWidth / width) * height;
+      width = maxWidth;
+    }
+    
+    if (height > maxHeight) {
+      width = (maxHeight / height) * width;
+      height = maxHeight;
+    }
+    
+    // Create canvas and draw the image
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Draw the image on the canvas
+    ctx?.drawImage(img, 0, 0, width, height);
+    
+    // Get the compressed image as a data URL
+    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    
+    handleInputChange('idPhoto', compressedDataUrl);
   };
 
   return (
@@ -124,7 +140,10 @@ export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFiel
         {/* 3x4 ID Photo upload */}
         <div className="text-center space-y-2">
           <p className="text-sm text-muted-foreground mb-2">Ảnh thẻ 3x4</p>
-          <div className="w-24 h-32 mx-auto border rounded-md overflow-hidden">
+          <div 
+            className="w-24 h-32 mx-auto border rounded-md overflow-hidden cursor-pointer hover:border-primary transition-colors"
+            onClick={() => formData.originalIdPhoto && setShowCropper(true)}
+          >
             {formData.idPhoto ? (
               <img 
                 src={formData.idPhoto} 
@@ -137,11 +156,11 @@ export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFiel
               </div>
             )}
           </div>
-          <div>
+          <div className="flex items-center justify-center gap-4">
             <Label htmlFor="idPhoto" className="cursor-pointer">
               <div className="flex items-center gap-2 text-sm text-primary hover:text-primary/80">
                 <FileImage className="w-4 h-4" />
-                <span>Tải lên ảnh thẻ 3x4</span>
+                <span>Tải lên ảnh thẻ</span>
               </div>
             </Label>
             <Input
@@ -151,12 +170,33 @@ export const BasicInfoFieldset = ({ formData, handleInputChange }: BasicInfoFiel
               className="hidden"
               onChange={handleIdPhotoChange}
             />
+            
+            {formData.idPhoto && (
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-xs text-primary hover:text-primary/80"
+                onClick={() => formData.originalIdPhoto ? setShowCropper(true) : null}
+              >
+                <Crop className="w-3 h-3 mr-1" />
+                Cắt lại ảnh
+              </Button>
+            )}
           </div>
           {idPhotoError && (
             <p className="text-xs text-destructive mt-1">{idPhotoError}</p>
           )}
         </div>
       </div>
+      
+      {/* ID Photo Cropper Dialog */}
+      {formData.originalIdPhoto && (
+        <IdPhotoCropper
+          open={showCropper}
+          onOpenChange={setShowCropper}
+          imageUrl={formData.originalIdPhoto}
+          onCrop={handleCroppedImage}
+        />
+      )}
       
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">

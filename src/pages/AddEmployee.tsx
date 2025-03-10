@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store';
 import { motion } from 'framer-motion';
@@ -19,11 +18,15 @@ const AddEmployeePage = () => {
   const handleAddEmployee = (formData: EmployeeFormValues) => {
     console.log("Adding employee with data:", formData);
     
+    // Clean up the formData before sending to the store
+    // Remove the originalIdPhoto which is only used for editing
+    const { originalIdPhoto, ...cleanFormData } = formData;
+    
     // Make sure departmentIds and positionIds are passed to the store action
     addEmployee({
-      ...formData,
-      departmentIds: formData.departmentIds || [],
-      positionIds: formData.positionIds || []
+      ...cleanFormData,
+      departmentIds: cleanFormData.departmentIds || [],
+      positionIds: cleanFormData.positionIds || []
     });
     
     toast.success("Thêm nhân viên thành công");

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,6 +48,9 @@ export default function EmployeeForm({
       : [],
     academicDegreeId: employee?.academicDegreeId || "",
     academicTitleId: employee?.academicTitleId || "",
+    avatar: employee?.avatar || "",
+    idPhoto: employee?.idPhoto || "",
+    originalIdPhoto: "", // Initialize the original image field
   });
 
   const form = useForm<EmployeeFormValues>({

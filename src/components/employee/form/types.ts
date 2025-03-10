@@ -14,6 +14,7 @@ export const formSchema = z.object({
   academicTitleId: z.string().optional(),
   avatar: z.string().optional(),
   idPhoto: z.string().optional(),
+  originalIdPhoto: z.string().optional(), // Store the original image for cropping
 });
 
 export type EmployeeFormValues = z.infer<typeof formSchema>;

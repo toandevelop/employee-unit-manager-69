@@ -32,7 +32,10 @@ const EmployeeFormDialog = ({
     departmentIds: employee?.departmentEmployees?.map(de => de.departmentId) || [],
     positionIds: employee?.positionEmployees?.map(pe => pe.positionId) || [],
     academicDegreeId: employee?.academicDegreeId || '',
-    academicTitleId: employee?.academicTitleId || undefined
+    academicTitleId: employee?.academicTitleId || undefined,
+    avatar: employee?.avatar || '',
+    idPhoto: employee?.idPhoto || '',
+    originalIdPhoto: '', // Initialize the original image field
   });
 
   // Update form data when employee changes
@@ -48,7 +51,10 @@ const EmployeeFormDialog = ({
         departmentIds: employee.departmentEmployees?.map(de => de.departmentId) || [],
         positionIds: employee.positionEmployees?.map(pe => pe.positionId) || [],
         academicDegreeId: employee.academicDegreeId || '',
-        academicTitleId: employee.academicTitleId || undefined
+        academicTitleId: employee.academicTitleId || undefined,
+        avatar: employee.avatar || '',
+        idPhoto: employee.idPhoto || '',
+        originalIdPhoto: '', // Reset the original image field
       });
     }
   }, [employee]);
