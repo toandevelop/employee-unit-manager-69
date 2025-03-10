@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,6 +42,7 @@ const Layout = ({ children }: LayoutProps) => {
     { path: '/', label: 'Tổng quan', icon: <LayoutDashboard className="h-5 w-5" /> },
     { path: '/employees', label: 'Quản lý nhân viên', icon: <Users className="h-5 w-5" /> },
     { path: '/contracts', label: 'Quản lý hợp đồng', icon: <FileText className="h-5 w-5" /> },
+    { path: '/work-reports', label: 'Báo cáo công việc', icon: <FileText className="h-5 w-5" /> },
   ];
   
   const categories: NavigationCategory[] = [
