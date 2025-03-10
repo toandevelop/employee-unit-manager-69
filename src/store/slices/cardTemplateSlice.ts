@@ -14,7 +14,7 @@ export const createCardTemplateSlice: StateCreator<
   [],
   [],
   CardTemplateSlice
-> = (set, get) => ({
+> = (set, get, api) => ({
   cardTemplates: [
     {
       id: 'default',
