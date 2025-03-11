@@ -9,6 +9,7 @@ import { createAcademicSlice } from './slices/academicSlice';
 import { createRelationshipSlice } from './slices/relationshipSlice';
 import { createWorkReportSlice } from './slices/workReportSlice';
 import { createLeaveSlice } from './slices/leaveSlice';
+import { createOvertimeSlice } from './slices/overtimeSlice';
 
 // Define the store type to include all slice properties
 type StoreState = ReturnType<typeof createEmployeeSlice> &
@@ -18,21 +19,23 @@ type StoreState = ReturnType<typeof createEmployeeSlice> &
   ReturnType<typeof createAcademicSlice> &
   ReturnType<typeof createRelationshipSlice> &
   ReturnType<typeof createWorkReportSlice> &
-  ReturnType<typeof createLeaveSlice>;
+  ReturnType<typeof createLeaveSlice> &
+  ReturnType<typeof createOvertimeSlice>;
 
 // Combine all slices into a single store
 export const useAppStore = create<StoreState>()(
   devtools(
     persist(
-      (set, get) => ({
-        ...createEmployeeSlice(set, get),
-        ...createDepartmentSlice(set, get),
-        ...createPositionSlice(set, get),
-        ...createContractSlice(set, get),
-        ...createAcademicSlice(set, get),
-        ...createRelationshipSlice(set, get),
-        ...createWorkReportSlice(set, get),
-        ...createLeaveSlice(set, get),
+      (...args) => ({
+        ...createEmployeeSlice(...args),
+        ...createDepartmentSlice(...args),
+        ...createPositionSlice(...args),
+        ...createContractSlice(...args),
+        ...createAcademicSlice(...args),
+        ...createRelationshipSlice(...args),
+        ...createWorkReportSlice(...args),
+        ...createLeaveSlice(...args),
+        ...createOvertimeSlice(...args),
       }),
       {
         name: 'employee-management-storage',
@@ -49,6 +52,8 @@ export const useAppStore = create<StoreState>()(
           workReports: state.workReports,
           leaveTypes: state.leaveTypes,
           leaves: state.leaves,
+          overtimeTypes: state.overtimeTypes,
+          overtimes: state.overtimes,
         }),
         storage: typeof window !== 'undefined' ? window.localStorage : undefined
       }

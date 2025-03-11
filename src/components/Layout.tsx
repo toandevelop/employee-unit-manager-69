@@ -3,7 +3,22 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Users, Building2, Briefcase, FileText, FileType, Menu, X, ChevronDown, ChevronRight, LayoutDashboard, GraduationCap, BookOpen } from 'lucide-react';
+import { 
+  Users, 
+  Building2, 
+  Briefcase, 
+  FileText, 
+  FileType, 
+  Menu, 
+  X, 
+  ChevronDown, 
+  ChevronRight, 
+  LayoutDashboard, 
+  GraduationCap, 
+  BookOpen,
+  Clock,
+  CalendarClock
+} from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -46,6 +61,8 @@ const Layout = ({ children }: LayoutProps) => {
     { path: '/employees', label: 'Quản lý nhân viên', icon: <Users className="h-5 w-5" /> },
     { path: '/contracts', label: 'Quản lý hợp đồng', icon: <FileText className="h-5 w-5" /> },
     { path: '/work-reports', label: 'Báo cáo công việc', icon: <FileText className="h-5 w-5" /> },
+    { path: '/leaves', label: 'Quản lý nghỉ phép', icon: <CalendarClock className="h-5 w-5" /> },
+    { path: '/overtimes', label: 'Quản lý tăng ca', icon: <Clock className="h-5 w-5" /> },
   ];
   
   const categories: NavigationCategory[] = [
@@ -58,6 +75,8 @@ const Layout = ({ children }: LayoutProps) => {
         { path: '/contract-types', label: 'Quản lý loại hợp đồng', icon: <FileType className="h-5 w-5" /> },
         { path: '/academic-degrees', label: 'Quản lý học vị', icon: <GraduationCap className="h-5 w-5" /> },
         { path: '/academic-titles', label: 'Quản lý học hàm', icon: <BookOpen className="h-5 w-5" /> },
+        { path: '/leave-types', label: 'Loại nghỉ phép', icon: <CalendarClock className="h-5 w-5" /> },
+        { path: '/overtime-types', label: 'Loại tăng ca', icon: <Clock className="h-5 w-5" /> },
       ]
     }
   ];

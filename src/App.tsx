@@ -22,6 +22,8 @@ import AddWorkReportPage from "./pages/AddWorkReport";
 import EditWorkReportPage from "./pages/EditWorkReport";
 import LeavesPage from "./pages/Leaves";
 import LeaveTypesPage from "./pages/LeaveTypes";
+import OvertimesPage from "./pages/Overtimes";
+import OvertimeTypesPage from "./pages/OvertimeTypes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ const App = () => (
               <Route path="/work-reports/edit/:id" element={<EditWorkReportPage />} />
               <Route path="/leaves" element={<LeavesPage />} />
               <Route path="/leave-types" element={<LeaveTypesPage />} />
+              <Route path="/overtimes" element={<OvertimesPage />} />
+              <Route path="/overtime-types" element={<OvertimeTypesPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>

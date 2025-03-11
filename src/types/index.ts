@@ -1,4 +1,3 @@
-
 export interface Employee {
   id: string;
   code: string;
@@ -100,7 +99,6 @@ export interface WorkReport {
   createdAt: string;
 }
 
-// New types for leave management
 export interface LeaveType {
   id: string;
   code: string;
@@ -127,5 +125,37 @@ export interface Leave {
   createdAt: string;
   employee?: Employee;
   leaveType?: LeaveType;
+  department?: Department;
+}
+
+export interface OvertimeType {
+  id: string;
+  code: string;
+  name: string;
+  coefficient: number; // Hệ số
+  overtimes: Overtime[];
+}
+
+export interface Overtime {
+  id: string;
+  employeeId: string;
+  overtimeTypeId: string;
+  departmentId: string;
+  overtimeDate: string;
+  startTime: string;
+  endTime: string;
+  hours: number;
+  content: string;
+  status: 'pending' | 'department_approved' | 'approved' | 'rejected';
+  departmentApprovedById?: string;
+  departmentApprovedDate?: string;
+  approvedById?: string;
+  approvedDate?: string;
+  rejectedById?: string;
+  rejectedDate?: string;
+  rejectionReason?: string;
+  createdAt: string;
+  employee?: Employee;
+  overtimeType?: OvertimeType;
   department?: Department;
 }
