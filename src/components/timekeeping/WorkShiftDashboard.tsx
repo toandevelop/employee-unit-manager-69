@@ -1,108 +1,102 @@
 
-import { useState } from 'react';
-import { useAppStore } from '@/store';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import WorkShiftTable from './WorkShiftTable';
-import WorkShiftDialog from './WorkShiftDialog';
-import { WorkShift } from '@/types';
+import { useState } from "react";
+import { useAppStore } from "@/store";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WorkShiftBar } from "@/components/timekeeping/WorkShiftBar";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import { WorkShiftDialog } from "@/components/timekeeping/WorkShiftDialog";
 
-const WorkShiftDashboard = () => {
+export function WorkShiftDashboard() {
   const { workShifts } = useAppStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingShift, setEditingShift] = useState<WorkShift | null>(null);
+
+  const totalShifts = workShifts.length;
+  const morningShifts = workShifts.filter(shift => {
+    const startHour = parseInt(shift.startTime.split(':')[0]);
+    return startHour >= 5 && startHour < 12;
+  }).length;
   
-  const handleAddShift = () => {
-    setEditingShift(null);
-    setIsDialogOpen(true);
-  };
+  const afternoonShifts = workShifts.filter(shift => {
+    const startHour = parseInt(shift.startTime.split(':')[0]);
+    return startHour >= 12 && startHour < 18;
+  }).length;
   
-  const handleEditShift = (shift: WorkShift) => {
-    setEditingShift(shift);
-    setIsDialogOpen(true);
-  };
+  const nightShifts = workShifts.filter(shift => {
+    const startHour = parseInt(shift.startTime.split(':')[0]);
+    return startHour >= 18 || startHour < 5;
+  }).length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Quản lý ca làm việc</h1>
-          <p className="text-muted-foreground mt-1">Tạo và quản lý các ca làm việc</p>
-        </div>
-        
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Tổng số ca làm việc
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{totalShifts}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Ca sáng
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{morningShifts}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Ca chiều
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{afternoonShifts}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Ca đêm
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{nightShifts}</div>
+        </CardContent>
+      </Card>
+
+      <div className="md:col-span-2 lg:col-span-4">
         <Button 
-          className="flex gap-2 shadow-md hover:shadow-lg transition-all"
-          onClick={handleAddShift}
+          onClick={() => setIsDialogOpen(true)}
+          className="mb-4"
         >
-          <Plus className="h-4 w-4" />
-          <span>Thêm ca làm việc</span>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Thêm ca làm việc mới
         </Button>
+
+        <Tabs defaultValue="distribution">
+          <TabsList className="mb-4">
+            <TabsTrigger value="distribution">Phân bố ca làm việc</TabsTrigger>
+          </TabsList>
+          <TabsContent value="distribution">
+            <WorkShiftBar />
+          </TabsContent>
+        </Tabs>
       </div>
       
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Tổng ca làm việc</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{workShifts.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Ca sáng</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {workShifts.filter(shift => 
-                new Date(`2000-01-01T${shift.startTime}`) < new Date('2000-01-01T12:00')
-              ).length}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Ca chiều</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {workShifts.filter(shift => 
-                new Date(`2000-01-01T${shift.startTime}`) >= new Date('2000-01-01T12:00') &&
-                new Date(`2000-01-01T${shift.startTime}`) < new Date('2000-01-01T18:00')
-              ).length}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Ca tối</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {workShifts.filter(shift => 
-                new Date(`2000-01-01T${shift.startTime}`) >= new Date('2000-01-01T18:00')
-              ).length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <WorkShiftTable 
-        workShifts={workShifts}
-        onEditClick={handleEditShift}
-      />
-      
-      <WorkShiftDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        shift={editingShift}
+      <WorkShiftDialog 
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
       />
     </div>
   );
-};
-
-export default WorkShiftDashboard;
+}

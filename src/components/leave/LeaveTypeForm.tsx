@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   code: z.string().min(2, {
@@ -31,6 +32,13 @@ const formSchema = z.object({
   }),
   name: z.string().min(3, {
     message: "Tên loại nghỉ phép phải có ít nhất 3 ký tự.",
+  }),
+  description: z.string().optional(),
+  daysAllowed: z.coerce.number().min(0, {
+    message: "Số ngày phải là số không âm",
+  }),
+  paidPercentage: z.coerce.number().min(0).max(100, {
+    message: "Phần trăm lương phải từ 0 đến 100",
   }),
 });
 
@@ -50,6 +58,9 @@ export function LeaveTypeForm({ isOpen, onOpenChange, leaveType, onSuccess }: Le
     defaultValues: {
       code: leaveType?.code || "",
       name: leaveType?.name || "",
+      description: leaveType?.description || "",
+      daysAllowed: leaveType?.daysAllowed || 0,
+      paidPercentage: leaveType?.paidPercentage || 100,
     },
   });
 
@@ -61,6 +72,9 @@ export function LeaveTypeForm({ isOpen, onOpenChange, leaveType, onSuccess }: Le
       const leaveTypeData = {
         code: values.code,
         name: values.name,
+        description: values.description,
+        daysAllowed: values.daysAllowed,
+        paidPercentage: values.paidPercentage,
       };
       
       if (leaveType) {
@@ -116,6 +130,45 @@ export function LeaveTypeForm({ isOpen, onOpenChange, leaveType, onSuccess }: Le
                   <FormLabel>Tên loại nghỉ phép</FormLabel>
                   <FormControl>
                     <Input placeholder="Ví dụ: Nghỉ phép có lương" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mô tả</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Mô tả về loại nghỉ phép" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="daysAllowed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Số ngày cho phép</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" placeholder="Số ngày" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="paidPercentage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phần trăm lương (%)</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" max="100" placeholder="Phần trăm lương" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

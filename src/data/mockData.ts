@@ -1,3 +1,4 @@
+
 import { Employee, Department, Position, DepartmentEmployee, PositionEmployee, LeaveType, Leave } from "../types";
 
 export const positions: Position[] = [
@@ -341,72 +342,108 @@ export const leaveTypes: LeaveType[] = [
     id: "1",
     code: "NP-VP",
     name: "Nghỉ phép có lương",
+    description: "Nghỉ phép năm theo quy định của Bộ luật Lao động",
+    daysAllowed: 12,
+    paidPercentage: 100,
     leaves: []
   },
   {
     id: "2",
     code: "NP-KL",
     name: "Nghỉ phép không lương",
+    description: "Nghỉ không hưởng lương theo thỏa thuận",
+    daysAllowed: 90,
+    paidPercentage: 0,
     leaves: []
   },
   {
     id: "3",
     code: "NP-BH",
     name: "Nghỉ phép bảo hiểm",
+    description: "Nghỉ có bảo hiểm xã hội chi trả",
+    daysAllowed: 30,
+    paidPercentage: 75,
     leaves: []
   },
   {
     id: "4",
     code: "NP-OM",
     name: "Nghỉ ốm",
+    description: "Nghỉ ốm đau có xác nhận của cơ sở y tế",
+    daysAllowed: 30,
+    paidPercentage: 75,
     leaves: []
   },
   {
     id: "5",
     code: "NP-TS",
     name: "Nghỉ thai sản",
+    description: "Nghỉ thai sản cho lao động nữ",
+    daysAllowed: 180,
+    paidPercentage: 100,
     leaves: []
   },
   {
     id: "6",
     code: "NP-CC",
     name: "Nghỉ chăm con",
+    description: "Nghỉ để chăm sóc con ốm dưới 7 tuổi",
+    daysAllowed: 20,
+    paidPercentage: 75,
     leaves: []
   },
   {
     id: "7",
     code: "NP-HN",
     name: "Nghỉ hôn nhân",
+    description: "Nghỉ kết hôn",
+    daysAllowed: 3,
+    paidPercentage: 100,
     leaves: []
   },
   {
     id: "8",
     code: "NP-TT",
     name: "Nghỉ tang tế",
+    description: "Nghỉ khi thân nhân mất",
+    daysAllowed: 3,
+    paidPercentage: 100,
     leaves: []
   },
   {
     id: "9",
     code: "NP-HC",
     name: "Nghỉ học tập",
+    description: "Nghỉ để tham gia đào tạo, học tập",
+    daysAllowed: 14,
+    paidPercentage: 50,
     leaves: []
   },
   {
     id: "10",
     code: "NP-CT",
     name: "Nghỉ công tác",
+    description: "Nghỉ để thực hiện công tác đặc biệt",
+    daysAllowed: 10,
+    paidPercentage: 100,
     leaves: []
   },
   {
     id: "11",
     code: "NP-QT",
     name: "Nghỉ quốc tế",
+    description: "Nghỉ các ngày lễ quốc tế theo quy định",
+    daysAllowed: 11,
+    paidPercentage: 100,
     leaves: []
   },
   {
     id: "12",
     code: "NP-DB",
     name: "Nghỉ đặc biệt",
+    description: "Nghỉ trong trường hợp đặc biệt khác",
+    daysAllowed: 5,
+    paidPercentage: 50,
     leaves: []
   }
 ];
