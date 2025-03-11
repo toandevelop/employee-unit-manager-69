@@ -1,13 +1,17 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { PlusCircle } from "lucide-react";
+import { FilePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LeaveTypeForm } from "@/components/leave/LeaveTypeForm";
 import { LeaveTypeTable } from "@/components/leave/LeaveTypeTable";
+import { LeaveTypeForm } from "@/components/leave/LeaveTypeForm";
 
 const LeaveTypes = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const handleLeaveTypeSuccess = () => {
+    // Handle success, e.g., refresh data
+  };
 
   return (
     <motion.div
@@ -16,30 +20,27 @@ const LeaveTypes = () => {
       exit={{ opacity: 0 }}
       className="container mx-auto py-6"
     >
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+      <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Loại nghỉ phép</h1>
           <p className="text-muted-foreground">
-            Quản lý các loại nghỉ phép trong hệ thống
+            Quản lý các loại nghỉ phép theo quy định của pháp luật lao động Việt Nam
           </p>
         </div>
-        <Button 
-          className="mt-4 md:mt-0" 
-          onClick={() => setIsAddDialogOpen(true)}
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
+        <Button onClick={() => setIsAddDialogOpen(true)}>
+          <FilePlus className="mr-2 h-4 w-4" />
           Thêm loại nghỉ phép
         </Button>
       </div>
 
-      <div className="grid gap-4">
+      <div className="bg-white rounded-lg border p-6">
         <LeaveTypeTable />
       </div>
 
       <LeaveTypeForm
         isOpen={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
-        onSuccess={() => {}}
+        onSuccess={handleLeaveTypeSuccess}
       />
     </motion.div>
   );

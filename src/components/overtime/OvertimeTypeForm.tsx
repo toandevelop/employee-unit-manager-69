@@ -1,37 +1,39 @@
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { 
+import { useAppStore } from "@/store";
+import { OvertimeType } from "@/types";
+import { useToast } from "@/hooks/use-toast";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAppStore } from "@/store";
-import { OvertimeType } from "@/types";
-import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   code: z.string().min(2, {
     message: "Mã loại tăng ca phải có ít nhất 2 ký tự",
   }),
-  name: z.string().min(2, {
-    message: "Tên loại tăng ca phải có ít nhất 2 ký tự",
+  name: z.string().min(3, {
+    message: "Tên loại tăng ca phải có ít nhất 3 ký tự",
   }),
-  coefficient: z.coerce.number().min(1, {
-    message: "Hệ số phải lớn hơn hoặc bằng 1",
+  coefficient: z.coerce.number().min(0.1, {
+    message: "Hệ số phải lớn hơn 0.1",
+  }).max(10, {
+    message: "Hệ số không được vượt quá 10",
   }),
 });
 
@@ -65,18 +67,29 @@ export function OvertimeTypeForm({
 
   function onSubmit(values: FormValues) {
     if (isEditing && overtimeType) {
-      updateOvertimeType(overtimeType.id, values);
+      updateOvertimeType(overtimeType.id, {
+        code: values.code,
+        name: values.name,
+        coefficient: values.coefficient,
+      });
+      
       toast({
         title: "Cập nhật thành công",
-        description: `Đã cập nhật loại tăng ca ${values.name}`,
+        description: "Đã cập nhật thông tin loại tăng ca",
       });
     } else {
-      addOvertimeType(values);
+      addOvertimeType({
+        code: values.code,
+        name: values.name,
+        coefficient: values.coefficient,
+      });
+      
       toast({
         title: "Thêm mới thành công",
-        description: `Đã thêm loại tăng ca ${values.name}`,
+        description: "Đã thêm loại tăng ca mới",
       });
     }
+    
     onOpenChange(false);
     onSuccess();
     form.reset();

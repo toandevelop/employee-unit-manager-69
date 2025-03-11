@@ -3,7 +3,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
 import { 
   Dialog,
   DialogContent,
@@ -99,6 +98,9 @@ export function OvertimeForm({
     const overtimeData = {
       ...values,
       overtimeDate: format(values.overtimeDate, 'yyyy-MM-dd'),
+      startTime: values.startTime, // Ensure these are explicitly passed
+      endTime: values.endTime,
+      content: values.content
     };
 
     if (isEditing && overtime) {

@@ -26,16 +26,16 @@ type StoreState = ReturnType<typeof createEmployeeSlice> &
 export const useAppStore = create<StoreState>()(
   devtools(
     persist(
-      (...args) => ({
-        ...createEmployeeSlice(...args),
-        ...createDepartmentSlice(...args),
-        ...createPositionSlice(...args),
-        ...createContractSlice(...args),
-        ...createAcademicSlice(...args),
-        ...createRelationshipSlice(...args),
-        ...createWorkReportSlice(...args),
-        ...createLeaveSlice(...args),
-        ...createOvertimeSlice(...args),
+      (...a) => ({
+        ...createEmployeeSlice(...a),
+        ...createDepartmentSlice(...a),
+        ...createPositionSlice(...a),
+        ...createContractSlice(...a),
+        ...createAcademicSlice(...a),
+        ...createRelationshipSlice(...a),
+        ...createWorkReportSlice(...a),
+        ...createLeaveSlice(...a),
+        ...createOvertimeSlice(...a),
       }),
       {
         name: 'employee-management-storage',
@@ -55,7 +55,6 @@ export const useAppStore = create<StoreState>()(
           overtimeTypes: state.overtimeTypes,
           overtimes: state.overtimes,
         }),
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined
       }
     )
   )

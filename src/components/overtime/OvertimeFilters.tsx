@@ -1,7 +1,7 @@
+
 import { useEffect, useState } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import {
@@ -69,7 +69,7 @@ export function OvertimeFilters({ filters, onFilterChange }: OvertimeFiltersProp
         endDate = localFilters.endDate;
     }
     
-    const newFilters = {
+    const newFilters: OvertimeFilters = {
       ...localFilters,
       filterType: type,
       startDate,
@@ -86,7 +86,7 @@ export function OvertimeFilters({ filters, onFilterChange }: OvertimeFiltersProp
     
     // If start date is after end date, adjust end date
     if (field === 'startDate' && date > localFilters.endDate) {
-      const newFilters = {
+      const newFilters: OvertimeFilters = {
         ...localFilters,
         filterType: 'custom',
         startDate: date,
@@ -99,7 +99,7 @@ export function OvertimeFilters({ filters, onFilterChange }: OvertimeFiltersProp
     
     // If end date is before start date, adjust start date
     if (field === 'endDate' && date < localFilters.startDate) {
-      const newFilters = {
+      const newFilters: OvertimeFilters = {
         ...localFilters,
         filterType: 'custom',
         startDate: date,
@@ -110,7 +110,7 @@ export function OvertimeFilters({ filters, onFilterChange }: OvertimeFiltersProp
       return;
     }
     
-    const newFilters = {
+    const newFilters: OvertimeFilters = {
       ...localFilters,
       filterType: 'custom',
       [field]: date
@@ -122,7 +122,7 @@ export function OvertimeFilters({ filters, onFilterChange }: OvertimeFiltersProp
   
   // Handler for department or employee changes
   const handleSelectChange = (field: 'departmentId' | 'employeeId', value: string) => {
-    const newFilters = {
+    const newFilters: OvertimeFilters = {
       ...localFilters,
       [field]: value || undefined
     };
