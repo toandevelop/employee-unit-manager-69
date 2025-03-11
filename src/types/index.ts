@@ -103,6 +103,7 @@ export interface LeaveType {
   id: string;
   code: string;
   name: string;
+  description?: string;
   leaves: Leave[];
 }
 
@@ -114,6 +115,7 @@ export interface Leave {
   startDate: string;
   endDate: string;
   numberOfDays: number;
+  reason?: string;
   status: 'pending' | 'department_approved' | 'approved' | 'rejected';
   departmentApprovedById?: string;
   departmentApprovedDate?: string;
@@ -158,4 +160,52 @@ export interface Overtime {
   employee?: Employee;
   overtimeType?: OvertimeType;
   department?: Department;
+}
+
+export interface WorkShift {
+  id: string;
+  code: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  description?: string;
+  timeEntries: TimeEntry[];
+}
+
+export interface TimeEntry {
+  id: string;
+  code: string;
+  employeeId: string;
+  departmentId: string;
+  workShiftId: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  workDate: string;
+  status: 'late' | 'early_leave' | 'normal' | 'absent' | 'leave' | 'holiday';
+  overtimeHours: number;
+  notes?: string;
+  employee?: Employee;
+  department?: Department;
+  workShift?: WorkShift;
+}
+
+export interface RawTimeData {
+  id: string;
+  deviceId: string;
+  employeeCode: string;
+  timestamp: string;
+  direction: 'in' | 'out';
+  synced: boolean;
+  syncDate?: string;
+  processed: boolean;
+}
+
+export interface TimekeepingDevice {
+  id: string;
+  code: string;
+  name: string;
+  ipAddress: string;
+  location: string;
+  status: 'active' | 'inactive' | 'maintenance';
+  lastSyncDate?: string;
 }
