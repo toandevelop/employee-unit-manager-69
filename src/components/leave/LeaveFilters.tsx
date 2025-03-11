@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { useAppStore } from "@/store";
 import { Button } from "@/components/ui/button";
@@ -37,29 +36,42 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
   const [tempFilters, setTempFilters] = useState<LeaveFilters>(filters);
   const [filteredEmployees, setFilteredEmployees] = useState<typeof employees>([]);
 
-  // Set date range based on filter type
+  useEffect(() => {
+    setTempFilters(filters);
+    
+    if (filters.departmentId) {
+      const departmentEmployeeIds = departmentEmployees
+        .filter(de => de.departmentId === filters.departmentId)
+        .map(de => de.employeeId);
+      
+      const filtered = employees.filter(emp => 
+        departmentEmployeeIds.includes(emp.id)
+      );
+      
+      setFilteredEmployees(filtered);
+    } else {
+      setFilteredEmployees(employees);
+    }
+  }, [filters, departments, employees, departmentEmployees]);
+
   const setDateRange = (filterType: 'custom' | 'week' | 'month' | 'year') => {
     const now = new Date();
     let startDate: Date | undefined;
     let endDate: Date | undefined;
 
     if (filterType === 'week') {
-      // Start from current week's Monday
       const day = now.getDay() || 7;
       startDate = new Date(now);
       startDate.setDate(now.getDate() - day + 1);
       endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 6);
     } else if (filterType === 'month') {
-      // Start from first day of current month
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
       endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     } else if (filterType === 'year') {
-      // Start from first day of current year
       startDate = new Date(now.getFullYear(), 0, 1);
       endDate = new Date(now.getFullYear(), 11, 31);
     } else {
-      // Custom - keep existing dates or use current date for both
       startDate = tempFilters.startDate || now;
       endDate = tempFilters.endDate || now;
     }
@@ -72,9 +84,7 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
     }));
   };
 
-  // Handle department change
   const handleDepartmentChange = (departmentId: string) => {
-    // Filter employees based on selected department
     if (departmentId) {
       const departmentEmployeeIds = departmentEmployees
         .filter(de => de.departmentId === departmentId)
@@ -89,25 +99,22 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
       setFilteredEmployees(employees);
     }
 
-    // Update filters
     setTempFilters(prev => ({
       ...prev,
       departmentId,
-      employeeId: undefined // Reset employee selection when department changes
+      employeeId: undefined
     }));
   };
 
-  // Apply filters
   const applyFilters = () => {
     onFilterChange(tempFilters);
   };
 
-  // Reset filters
   const resetFilters = () => {
     const resetFilters: LeaveFilters = {
       filterType: 'month',
-      startDate: undefined,
-      endDate: undefined,
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
       departmentId: undefined,
       employeeId: undefined
     };
@@ -225,7 +232,7 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
               <SelectValue placeholder="Tất cả đơn vị" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tất cả đơn vị</SelectItem>
+              <SelectItem value="all-departments">Tất cả đơn vị</SelectItem>
               {departments.map((department) => (
                 <SelectItem key={department.id} value={department.id}>
                   {department.name}
@@ -240,7 +247,7 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
           <Select 
             value={tempFilters.employeeId} 
             onValueChange={(value) => 
-              setTempFilters(prev => ({ ...prev, employeeId: value }))
+              setTempFilters(prev => ({ ...prev, employeeId: value === "all-employees" ? undefined : value }))
             }
             disabled={!tempFilters.departmentId && filteredEmployees.length === 0}
           >
@@ -248,8 +255,8 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
               <SelectValue placeholder="Tất cả nhân viên" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tất cả nhân viên</SelectItem>
-              {(tempFilters.departmentId ? filteredEmployees : employees).map((employee) => (
+              <SelectItem value="all-employees">Tất cả nhân viên</SelectItem>
+              {(tempFilters.departmentId && tempFilters.departmentId !== "all-departments" ? filteredEmployees : employees).map((employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
                   {employee.code} - {employee.name}
                 </SelectItem>

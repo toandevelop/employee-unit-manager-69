@@ -109,7 +109,9 @@ export function LeaveForm({ leave, isOpen, onOpenChange, onSuccess }: LeaveFormP
   const onSubmit = (data: FormValues) => {
     try {
       const leaveData = {
-        ...data,
+        employeeId: data.employeeId,
+        leaveTypeId: data.leaveTypeId,
+        departmentId: data.departmentId,
         startDate: format(data.startDate, "yyyy-MM-dd"),
         endDate: format(data.endDate, "yyyy-MM-dd"),
       };

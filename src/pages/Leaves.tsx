@@ -14,6 +14,8 @@ const Leaves = () => {
     filterType: 'month' as const,
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+    departmentId: undefined as string | undefined,
+    employeeId: undefined as string | undefined
   });
 
   return (
@@ -44,6 +46,11 @@ const Leaves = () => {
         endDate={filters.endDate}
         departmentId={filters.departmentId}
         employeeId={filters.employeeId}
+      />
+
+      <LeaveFilters
+        filters={filters}
+        onFilterChange={setFilters}
       />
 
       <LeaveTable />

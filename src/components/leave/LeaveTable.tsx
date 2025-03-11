@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useAppStore } from "@/store";
 import { Leave } from "@/types";
@@ -32,7 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Edit, Trash, CheckCircle, XCircle } from "lucide-react";
+import { Edit, Trash, CheckCircle } from "lucide-react";
 import { LeaveForm } from "./LeaveForm";
 import { toast } from "sonner";
 import { LeaveFilters } from "./LeaveFilters";
@@ -160,18 +160,8 @@ export function LeaveTable() {
     filterType: 'custom' | 'week' | 'month' | 'year';
   }>({
     filterType: 'month',
-  });
-
-  // Initialize filters for current month
-  useState(() => {
-    const now = new Date();
-    const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    setFilters({
-      filterType: 'month',
-      startDate,
-      endDate
-    });
+    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
   });
 
   // Filter leaves based on filters
@@ -192,12 +182,12 @@ export function LeaveTable() {
     }
     
     // Filter by department
-    if (filters.departmentId && leave.departmentId !== filters.departmentId) {
+    if (filters.departmentId && filters.departmentId !== "all-departments" && leave.departmentId !== filters.departmentId) {
       return false;
     }
     
     // Filter by employee
-    if (filters.employeeId && leave.employeeId !== filters.employeeId) {
+    if (filters.employeeId && filters.employeeId !== "all-employees" && leave.employeeId !== filters.employeeId) {
       return false;
     }
     
@@ -305,11 +295,6 @@ export function LeaveTable() {
 
   return (
     <>
-      <LeaveFilters 
-        filters={filters} 
-        onFilterChange={setFilters} 
-      />
-      
       <div className="rounded-md border">
         <Table>
           <TableHeader>

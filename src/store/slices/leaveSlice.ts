@@ -23,7 +23,7 @@ export interface LeaveSlice {
   rejectLeave: (id: string, rejectorId: string, reason: string) => void;
 }
 
-export const createLeaveSlice: StateCreator<LeaveSlice> = (set, get) => ({
+export const createLeaveSlice: StateCreator<LeaveSlice, [], [], LeaveSlice> = (set, get) => ({
   leaveTypes: [],
   leaves: [],
   
