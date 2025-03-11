@@ -99,3 +99,33 @@ export interface WorkReport {
   rejectedReason?: string;
   createdAt: string;
 }
+
+// New types for leave management
+export interface LeaveType {
+  id: string;
+  code: string;
+  name: string;
+  leaves: Leave[];
+}
+
+export interface Leave {
+  id: string;
+  employeeId: string;
+  leaveTypeId: string;
+  departmentId: string;
+  startDate: string;
+  endDate: string;
+  numberOfDays: number;
+  status: 'pending' | 'department_approved' | 'approved' | 'rejected';
+  departmentApprovedById?: string;
+  departmentApprovedDate?: string;
+  approvedById?: string;
+  approvedDate?: string;
+  rejectedById?: string;
+  rejectedDate?: string;
+  rejectionReason?: string;
+  createdAt: string;
+  employee?: Employee;
+  leaveType?: LeaveType;
+  department?: Department;
+}
