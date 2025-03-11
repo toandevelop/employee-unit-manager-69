@@ -50,6 +50,7 @@ export const useAppStore = create<StoreState>()(
           leaveTypes: state.leaveTypes,
           leaves: state.leaves,
         }),
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined
       }
     )
   )

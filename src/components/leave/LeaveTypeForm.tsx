@@ -1,11 +1,18 @@
 
 import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAppStore } from "@/store";
-import { LeaveType } from "@/types";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -15,65 +22,78 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-// Form schema for validation
 const formSchema = z.object({
-  code: z.string().min(1, "Mã loại nghỉ phép không được để trống"),
-  name: z.string().min(1, "Tên loại nghỉ phép không được để trống"),
+  code: z.string().min(2, {
+    message: "Mã loại nghỉ phép phải có ít nhất 2 ký tự.",
+  }),
+  name: z.string().min(3, {
+    message: "Tên loại nghỉ phép phải có ít nhất 3 ký tự.",
+  }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
-
 interface LeaveTypeFormProps {
-  leaveType?: LeaveType;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  initialData?: {
+    id: string;
+    code: string;
+    name: string;
+  };
 }
 
-export function LeaveTypeForm({ leaveType, isOpen, onOpenChange, onSuccess }: LeaveTypeFormProps) {
+export function LeaveTypeForm({ isOpen, onOpenChange, initialData }: LeaveTypeFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { addLeaveType, updateLeaveType } = useAppStore();
-  const isEditing = !!leaveType;
 
-  // Initialize the form
-  const form = useForm<FormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      code: leaveType?.code || "",
-      name: leaveType?.name || "",
+    defaultValues: initialData || {
+      code: "",
+      name: "",
     },
   });
 
-  // Handle form submission
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
+    
     try {
-      if (isEditing && leaveType) {
-        updateLeaveType(leaveType.id, data);
+      // Make sure we're passing required fields, not optional ones
+      const leaveTypeData = {
+        code: values.code,
+        name: values.name,
+      };
+      
+      if (initialData) {
+        updateLeaveType(initialData.id, leaveTypeData);
         toast.success("Cập nhật loại nghỉ phép thành công!");
       } else {
-        addLeaveType(data);
+        addLeaveType(leaveTypeData);
         toast.success("Thêm loại nghỉ phép thành công!");
       }
-      form.reset();
+      
       onOpenChange(false);
-      onSuccess();
+      form.reset();
     } catch (error) {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại sau!");
       console.error(error);
+      toast.error("Có lỗi xảy ra!");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Chỉnh sửa loại nghỉ phép" : "Thêm loại nghỉ phép mới"}
+            {initialData ? "Cập nhật loại nghỉ phép" : "Thêm loại nghỉ phép"}
           </DialogTitle>
+          <DialogDescription>
+            Vui lòng điền đầy đủ thông tin để {initialData ? "cập nhật" : "thêm"} loại nghỉ phép.
+          </DialogDescription>
         </DialogHeader>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -83,13 +103,12 @@ export function LeaveTypeForm({ leaveType, isOpen, onOpenChange, onSuccess }: Le
                 <FormItem>
                   <FormLabel>Mã loại nghỉ phép</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nhập mã loại nghỉ phép" {...field} />
+                    <Input placeholder="Ví dụ: NP-01" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="name"
@@ -97,21 +116,17 @@ export function LeaveTypeForm({ leaveType, isOpen, onOpenChange, onSuccess }: Le
                 <FormItem>
                   <FormLabel>Tên loại nghỉ phép</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nhập tên loại nghỉ phép" {...field} />
+                    <Input placeholder="Ví dụ: Nghỉ phép có lương" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
-                Hủy
+            <DialogFooter>
+              <Button type="submit" disabled={isSubmitting}>
+                {initialData ? "Cập nhật" : "Thêm"}
               </Button>
-              <Button type="submit">
-                {isEditing ? "Cập nhật" : "Thêm mới"}
-              </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

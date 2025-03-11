@@ -7,8 +7,10 @@ import { LeaveForm } from "@/components/leave/LeaveForm";
 import { LeaveTable } from "@/components/leave/LeaveTable";
 import { LeaveDashboard } from "@/components/leave/LeaveDashboard";
 import { LeaveFilters, LeaveFilters as LeaveFiltersType } from "@/components/leave/LeaveFilters";
+import { useAppStore } from "@/store";
 
 const Leaves = () => {
+  const { leaves } = useAppStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [filters, setFilters] = useState<LeaveFiltersType>({
     filterType: 'month',
@@ -20,6 +22,11 @@ const Leaves = () => {
 
   const handleFilterChange = (newFilters: LeaveFiltersType) => {
     setFilters(newFilters);
+  };
+
+  const handleLeaveSuccess = () => {
+    // Refresh data or update UI as needed
+    console.log("Leave request submitted successfully");
   };
 
   return (
@@ -57,12 +64,17 @@ const Leaves = () => {
         onFilterChange={handleFilterChange}
       />
 
-      <LeaveTable />
+      <LeaveTable 
+        startDate={filters.startDate}
+        endDate={filters.endDate}
+        departmentId={filters.departmentId}
+        employeeId={filters.employeeId}
+      />
 
       <LeaveForm
         isOpen={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
-        onSuccess={() => {}}
+        onSuccess={handleLeaveSuccess}
       />
     </motion.div>
   );
