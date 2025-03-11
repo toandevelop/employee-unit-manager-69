@@ -64,7 +64,7 @@ const Leaves = () => {
         onFilterChange={handleFilterChange}
       />
 
-      {/* Remove props from LeaveTable as it doesn't accept them */}
+      {/* Remove incorrect props from LeaveTable */}
       <LeaveTable />
 
       <LeaveForm
