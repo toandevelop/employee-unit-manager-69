@@ -1,15 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/store";
-import { format, parseISO } from "date-fns";
-import { 
-  Edit, 
-  Trash2, 
-  CheckCircle, 
-  Clock, 
-  AlertCircle,
-  XCircle
-} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Overtime } from "@/types";
 import {
   Table,
   TableBody,
@@ -18,39 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 import { OvertimeForm } from "./OvertimeForm";
-import { Overtime } from "@/types";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { OvertimeTableRow } from "./OvertimeTableRow";
+import { OvertimeTablePagination } from "./OvertimeTablePagination";
+import { OvertimeDialogs } from "./OvertimeDialogs";
 
 interface OvertimeTableProps {
   startDate: Date;
@@ -75,6 +39,7 @@ export function OvertimeTable({
     approveOvertime,
     rejectOvertime
   } = useAppStore();
+  
   const [filteredOvertimes, setFilteredOvertimes] = useState<Overtime[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentOvertime, setCurrentOvertime] = useState<Overtime | undefined>(undefined);
@@ -87,6 +52,7 @@ export function OvertimeTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  
   const { toast } = useToast();
 
   // Update filtered data when props change
@@ -132,36 +98,6 @@ export function OvertimeTable({
     setCurrentPage(page);
   };
 
-  const getEmployeeName = (employeeId: string) => {
-    const employee = employees.find(e => e.id === employeeId);
-    return employee ? `${employee.code} - ${employee.name}` : "Unknown";
-  };
-
-  const getDepartmentName = (departmentId: string) => {
-    const department = departments.find(d => d.id === departmentId);
-    return department ? department.name : "Unknown";
-  };
-
-  const getOvertimeTypeName = (typeId: string) => {
-    const type = overtimeTypes.find(t => t.id === typeId);
-    return type ? type.name : "Unknown";
-  };
-
-  const getStatusBadge = (status: Overtime['status']) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" /> Chờ duyệt</Badge>;
-      case 'department_approved':
-        return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" /> Đã duyệt đơn vị</Badge>;
-      case 'approved':
-        return <Badge variant="success" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" /> Đã duyệt</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Từ chối</Badge>;
-      default:
-        return null;
-    }
-  };
-
   const handleEdit = (overtime: Overtime) => {
     setCurrentOvertime(overtime);
     setIsEditing(true);
@@ -185,7 +121,6 @@ export function OvertimeTable({
 
   const handleDepartmentApprove = (id: string) => {
     // Assume current user has ID "emp-1" for demo purposes
-    // In a real app, you'd get this from authentication
     departmentApproveOvertime(id, "emp-1");
     toast({
       title: "Phê duyệt thành công",
@@ -232,81 +167,6 @@ export function OvertimeTable({
     setCurrentOvertime(undefined);
   };
 
-  const renderPagination = () => {
-    if (totalPages <= 1) return null;
-
-    const pageNumbers = [];
-    const maxVisiblePages = 3;
-    
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
-
-    return (
-      <Pagination className="mt-4">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious 
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-            />
-          </PaginationItem>
-          
-          {startPage > 1 && (
-            <PaginationItem>
-              <PaginationLink onClick={() => handlePageChange(1)}>1</PaginationLink>
-            </PaginationItem>
-          )}
-          
-          {startPage > 2 && (
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-          )}
-          
-          {pageNumbers.map(page => (
-            <PaginationItem key={page}>
-              <PaginationLink 
-                isActive={page === currentPage}
-                onClick={() => handlePageChange(page)}
-              >
-                {page}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-          
-          {endPage < totalPages - 1 && (
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-          )}
-          
-          {endPage < totalPages && (
-            <PaginationItem>
-              <PaginationLink onClick={() => handlePageChange(totalPages)}>
-                {totalPages}
-              </PaginationLink>
-            </PaginationItem>
-          )}
-          
-          <PaginationItem>
-            <PaginationNext 
-              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    );
-  };
-
   return (
     <>
       <div className="bg-white rounded-lg border">
@@ -335,78 +195,33 @@ export function OvertimeTable({
             ) : (
               getCurrentPageItems().map((overtime) => {
                 const employee = employees.find(e => e.id === overtime.employeeId);
+                const department = departments.find(d => d.id === overtime.departmentId);
+                const overtimeType = overtimeTypes.find(t => t.id === overtime.overtimeTypeId);
+                
                 return (
-                  <TableRow key={overtime.id}>
-                    <TableCell>{employee?.code || "N/A"}</TableCell>
-                    <TableCell>{employee?.name || "N/A"}</TableCell>
-                    <TableCell>{getDepartmentName(overtime.departmentId)}</TableCell>
-                    <TableCell>{format(parseISO(overtime.overtimeDate), "dd/MM/yyyy")}</TableCell>
-                    <TableCell>{overtime.startTime}</TableCell>
-                    <TableCell>{overtime.endTime}</TableCell>
-                    <TableCell>{overtime.hours}</TableCell>
-                    <TableCell>{getOvertimeTypeName(overtime.overtimeTypeId)}</TableCell>
-                    <TableCell>{getStatusBadge(overtime.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {overtime.status === 'pending' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDepartmentApprove(overtime.id)}
-                              title="Duyệt đơn vị"
-                            >
-                              <AlertCircle className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(overtime)}
-                              title="Chỉnh sửa"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(overtime.id)}
-                              title="Xóa"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                        
-                        {overtime.status === 'department_approved' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleApproveDialog(overtime.id)}
-                              title="Phê duyệt"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRejectDialog(overtime.id)}
-                              title="Từ chối"
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <OvertimeTableRow
+                    key={overtime.id}
+                    overtime={overtime}
+                    employee={employee}
+                    department={department}
+                    overtimeType={overtimeType}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onDepartmentApprove={handleDepartmentApprove}
+                    onApprove={handleApproveDialog}
+                    onReject={handleRejectDialog}
+                  />
                 );
               })
             )}
           </TableBody>
         </Table>
         
-        {renderPagination()}
+        <OvertimeTablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       {/* Edit Form Dialog */}
@@ -417,63 +232,20 @@ export function OvertimeTable({
         onSuccess={handleSuccess}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa đơn tăng ca này? Hành động này không thể hoàn tác.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Xóa</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Approve Confirmation Dialog */}
-      <AlertDialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận phê duyệt</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn phê duyệt đơn tăng ca này?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmApprove}>Phê duyệt</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Reject Dialog */}
-      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Từ chối đơn tăng ca</DialogTitle>
-            <DialogDescription>
-              Vui lòng nhập lý do từ chối đơn tăng ca này.
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            placeholder="Lý do từ chối..."
-            value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
-            className="min-h-[100px]"
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
-              Hủy
-            </Button>
-            <Button variant="destructive" onClick={confirmReject} disabled={!rejectionReason.trim()}>
-              Từ chối
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Confirmation Dialogs */}
+      <OvertimeDialogs
+        isDeleteDialogOpen={isDeleteDialogOpen}
+        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+        isApproveDialogOpen={isApproveDialogOpen}
+        setIsApproveDialogOpen={setIsApproveDialogOpen}
+        isRejectDialogOpen={isRejectDialogOpen}
+        setIsRejectDialogOpen={setIsRejectDialogOpen}
+        rejectionReason={rejectionReason}
+        setRejectionReason={setRejectionReason}
+        onConfirmDelete={confirmDelete}
+        onConfirmApprove={confirmApprove}
+        onConfirmReject={confirmReject}
+      />
     </>
   );
 }
