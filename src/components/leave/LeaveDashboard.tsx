@@ -1,115 +1,108 @@
 
-import { useMemo } from "react";
-import { useAppStore } from "@/store";
+import { useState, useEffect } from 'react';
+import { useAppStore } from '@/store';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, UserCheck, Users, XCircle } from "lucide-react";
+import { ClipboardCheck, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Leave } from '@/types';
 
 interface LeaveDashboardProps {
-  startDate?: Date;
-  endDate?: Date;
+  startDate: Date;
+  endDate: Date;
   departmentId?: string;
   employeeId?: string;
 }
 
-export function LeaveDashboard({ startDate, endDate, departmentId, employeeId }: LeaveDashboardProps) {
+export function LeaveDashboard({
+  startDate,
+  endDate,
+  departmentId,
+  employeeId
+}: LeaveDashboardProps) {
   const { leaves } = useAppStore();
+  const [filteredData, setFilteredData] = useState<Leave[]>([]);
   
-  // Calculate dashboard metrics based on filters
-  const metrics = useMemo(() => {
-    // Filter leaves based on date range, department, and employee
-    const filteredLeaves = leaves.filter(leave => {
-      const leaveStartDate = new Date(leave.startDate);
-      const leaveEndDate = new Date(leave.endDate);
-      
-      // Filter by date range
-      if (startDate && endDate) {
-        // Check if leave period overlaps with filter period
-        const isInDateRange = (
-          (leaveStartDate >= startDate && leaveStartDate <= endDate) ||
-          (leaveEndDate >= startDate && leaveEndDate <= endDate) ||
-          (leaveStartDate <= startDate && leaveEndDate >= endDate)
-        );
-        
-        if (!isInDateRange) return false;
-      }
-      
-      // Filter by department
-      if (departmentId && leave.departmentId !== departmentId) {
-        return false;
-      }
-      
-      // Filter by employee
-      if (employeeId && leave.employeeId !== employeeId) {
-        return false;
-      }
-      
-      return true;
-    });
+  useEffect(() => {
+    let filtered = [...leaves];
     
-    // Calculate metrics
-    const totalEmployees = new Set(filteredLeaves.map(leave => leave.employeeId)).size;
-    const totalDays = filteredLeaves.reduce((sum, leave) => sum + leave.numberOfDays, 0);
-    const approvedLeaves = filteredLeaves.filter(leave => leave.status === 'approved').length;
-    const rejectedLeaves = filteredLeaves.filter(leave => leave.status === 'rejected').length;
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.startDate);
+        return itemDate >= start && itemDate <= end;
+      });
+    }
     
-    return {
-      totalEmployees,
-      totalDays,
-      approvedLeaves,
-      rejectedLeaves
-    };
+    if (departmentId) {
+      filtered = filtered.filter(item => item.departmentId === departmentId);
+    }
+    
+    if (employeeId) {
+      filtered = filtered.filter(item => item.employeeId === employeeId);
+    }
+    
+    setFilteredData(filtered);
   }, [leaves, startDate, endDate, departmentId, employeeId]);
-
+  
+  const totalEntries = filteredData.length;
+  const pendingEntries = filteredData.filter(item => item.status === 'pending').length;
+  const approvedEntries = filteredData.filter(item => item.status === 'approved').length;
+  const rejectedEntries = filteredData.filter(item => item.status === 'rejected').length;
+  
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-6">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Nhân viên nghỉ phép</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium">Tổng đăng ký</CardTitle>
+          <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{metrics.totalEmployees}</div>
+          <div className="text-2xl font-bold">{totalEntries}</div>
           <p className="text-xs text-muted-foreground">
-            Tổng số nhân viên đã đăng ký nghỉ phép
+            Tổng số đơn nghỉ phép
           </p>
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Tổng số ngày nghỉ</CardTitle>
-          <CalendarDays className="h-4 w-4 text-muted-foreground" />
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium">Chờ duyệt</CardTitle>
+          <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{metrics.totalDays}</div>
+          <div className="text-2xl font-bold">{pendingEntries}</div>
           <p className="text-xs text-muted-foreground">
-            Tổng số ngày nghỉ phép đã đăng ký
+            Đơn nghỉ phép đang chờ duyệt
           </p>
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Đã duyệt</CardTitle>
-          <UserCheck className="h-4 w-4 text-muted-foreground" />
+          <CheckCircle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{metrics.approvedLeaves}</div>
+          <div className="text-2xl font-bold">{approvedEntries}</div>
           <p className="text-xs text-muted-foreground">
-            Số đơn nghỉ phép đã được duyệt
+            Đơn nghỉ phép đã được duyệt
           </p>
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Từ chối</CardTitle>
           <XCircle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{metrics.rejectedLeaves}</div>
+          <div className="text-2xl font-bold">{rejectedEntries}</div>
           <p className="text-xs text-muted-foreground">
-            Số đơn nghỉ phép đã bị từ chối
+            Đơn nghỉ phép bị từ chối
           </p>
         </CardContent>
       </Card>

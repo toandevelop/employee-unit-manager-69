@@ -96,9 +96,11 @@ export function OvertimeForm({
 
   function onSubmit(values: FormValues) {
     const overtimeData = {
-      ...values,
+      employeeId: values.employeeId,
+      departmentId: values.departmentId,
+      overtimeTypeId: values.overtimeTypeId,
       overtimeDate: format(values.overtimeDate, 'yyyy-MM-dd'),
-      startTime: values.startTime, // Ensure these are explicitly passed
+      startTime: values.startTime,
       endTime: values.endTime,
       content: values.content
     };

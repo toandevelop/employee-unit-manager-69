@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAppStore } from "@/store";
 import { Button } from "@/components/ui/button";
+import { LeaveType } from "@/types";
 import {
   Dialog,
   DialogContent,
@@ -34,24 +35,21 @@ const formSchema = z.object({
 });
 
 interface LeaveTypeFormProps {
+  leaveType?: LeaveType;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData?: {
-    id: string;
-    code: string;
-    name: string;
-  };
+  onSuccess: () => void;
 }
 
-export function LeaveTypeForm({ isOpen, onOpenChange, initialData }: LeaveTypeFormProps) {
+export function LeaveTypeForm({ isOpen, onOpenChange, leaveType, onSuccess }: LeaveTypeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addLeaveType, updateLeaveType } = useAppStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData || {
-      code: "",
-      name: "",
+    defaultValues: {
+      code: leaveType?.code || "",
+      name: leaveType?.name || "",
     },
   });
 
@@ -65,8 +63,8 @@ export function LeaveTypeForm({ isOpen, onOpenChange, initialData }: LeaveTypeFo
         name: values.name,
       };
       
-      if (initialData) {
-        updateLeaveType(initialData.id, leaveTypeData);
+      if (leaveType) {
+        updateLeaveType(leaveType.id, leaveTypeData);
         toast.success("Cập nhật loại nghỉ phép thành công!");
       } else {
         addLeaveType(leaveTypeData);
@@ -75,6 +73,7 @@ export function LeaveTypeForm({ isOpen, onOpenChange, initialData }: LeaveTypeFo
       
       onOpenChange(false);
       form.reset();
+      onSuccess();
     } catch (error) {
       console.error(error);
       toast.error("Có lỗi xảy ra!");
@@ -88,10 +87,10 @@ export function LeaveTypeForm({ isOpen, onOpenChange, initialData }: LeaveTypeFo
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? "Cập nhật loại nghỉ phép" : "Thêm loại nghỉ phép"}
+            {leaveType ? "Cập nhật loại nghỉ phép" : "Thêm loại nghỉ phép"}
           </DialogTitle>
           <DialogDescription>
-            Vui lòng điền đầy đủ thông tin để {initialData ? "cập nhật" : "thêm"} loại nghỉ phép.
+            Vui lòng điền đầy đủ thông tin để {leaveType ? "cập nhật" : "thêm"} loại nghỉ phép.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -124,7 +123,7 @@ export function LeaveTypeForm({ isOpen, onOpenChange, initialData }: LeaveTypeFo
             />
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
-                {initialData ? "Cập nhật" : "Thêm"}
+                {leaveType ? "Cập nhật" : "Thêm"}
               </Button>
             </DialogFooter>
           </form>
