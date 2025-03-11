@@ -191,7 +191,7 @@ export function OvertimeFilters({ filters, onFilterChange }: OvertimeFiltersProp
               <SelectItem value="all">Tất cả nhân viên</SelectItem>
               {employees.map((emp) => (
                 <SelectItem key={emp.id} value={emp.id}>
-                  {emp.fullName}
+                  {emp.firstName} {emp.lastName}
                 </SelectItem>
               ))}
             </SelectContent>

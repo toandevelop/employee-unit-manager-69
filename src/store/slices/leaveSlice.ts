@@ -2,6 +2,7 @@
 import { StateCreator } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { Leave, LeaveType } from '@/types';
+import { initialLeaveTypes, initialLeaves } from '@/data/leaveData';
 
 export interface LeaveSlice {
   leaveTypes: LeaveType[];
@@ -23,9 +24,9 @@ export interface LeaveSlice {
   rejectLeave: (id: string, rejectorId: string, reason: string) => void;
 }
 
-export const createLeaveSlice: StateCreator<LeaveSlice, [], [], LeaveSlice> = (set, get) => ({
-  leaveTypes: [],
-  leaves: [],
+export const createLeaveSlice: StateCreator<LeaveSlice, [], [], LeaveSlice> = (set, get, api) => ({
+  leaveTypes: initialLeaveTypes,
+  leaves: initialLeaves,
   
   // LeaveType actions
   addLeaveType: (leaveType) => {
