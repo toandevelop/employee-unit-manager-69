@@ -128,6 +128,7 @@ export const initialLeaves: Leave[] = [
     id: "leave-1",
     employeeId: "1",
     leaveTypeId: "lt-1",
+    departmentId: "dept-1", // Added required departmentId
     startDate: "2024-01-15",
     endDate: "2024-01-19",
     numberOfDays: 5,
@@ -143,6 +144,7 @@ export const initialLeaves: Leave[] = [
     id: "leave-2",
     employeeId: "2",
     leaveTypeId: "lt-3",
+    departmentId: "dept-2", // Added required departmentId
     startDate: "2024-02-10",
     endDate: "2024-02-12",
     numberOfDays: 3,
@@ -158,6 +160,7 @@ export const initialLeaves: Leave[] = [
     id: "leave-3",
     employeeId: "3",
     leaveTypeId: "lt-8",
+    departmentId: "dept-1", // Added required departmentId
     startDate: "2024-03-01",
     endDate: "2024-03-15",
     numberOfDays: 15,
@@ -169,6 +172,7 @@ export const initialLeaves: Leave[] = [
     id: "leave-4",
     employeeId: "4",
     leaveTypeId: "lt-1",
+    departmentId: "dept-3", // Added required departmentId
     startDate: "2024-04-10",
     endDate: "2024-04-17",
     numberOfDays: 8,
@@ -182,6 +186,7 @@ export const initialLeaves: Leave[] = [
     id: "leave-5",
     employeeId: "5",
     leaveTypeId: "lt-4",
+    departmentId: "dept-2", // Added required departmentId
     startDate: "2024-04-01",
     endDate: "2024-09-30",
     numberOfDays: 180,
@@ -197,6 +202,7 @@ export const initialLeaves: Leave[] = [
     id: "leave-6",
     employeeId: "6",
     leaveTypeId: "lt-7",
+    departmentId: "dept-1", // Added required departmentId
     startDate: "2024-02-15",
     endDate: "2024-02-19",
     numberOfDays: 5,
@@ -212,6 +218,7 @@ export const initialLeaves: Leave[] = [
     id: "leave-7",
     employeeId: "7",
     leaveTypeId: "lt-9",
+    departmentId: "dept-3", // Added required departmentId
     startDate: "2024-03-05",
     endDate: "2024-03-10",
     numberOfDays: 6,
@@ -228,6 +235,7 @@ export const initialLeaves: Leave[] = [
     id: "leave-8",
     employeeId: "8",
     leaveTypeId: "lt-13",
+    departmentId: "dept-2", // Added required departmentId
     startDate: "2024-04-02",
     endDate: "2024-04-04",
     numberOfDays: 3,

@@ -1,3 +1,4 @@
+
 export interface Employee {
   id: string;
   code: string;
@@ -104,6 +105,8 @@ export interface LeaveType {
   code: string;
   name: string;
   description?: string;
+  daysAllowed: number;
+  paidPercentage: number;
   leaves: Leave[];
 }
 

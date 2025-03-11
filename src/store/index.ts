@@ -42,9 +42,9 @@ export const useAppStore = create<StoreState>()(
         ...createWorkReportSlice(set, get),
         ...createLeaveSlice(set, get),
         ...createOvertimeSlice(set, get),
-        ...createWorkShiftSlice(set),
-        ...createTimeEntrySlice(set),
-        ...createTimekeepingDeviceSlice(set),
+        ...createWorkShiftSlice(set, get, {}),
+        ...createTimeEntrySlice(set, get, {}),
+        ...createTimekeepingDeviceSlice(set, get, {}),
       }),
       {
         name: 'employee-management-storage',
