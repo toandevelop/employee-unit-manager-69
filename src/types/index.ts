@@ -81,3 +81,21 @@ export interface AcademicTitle {
   shortName: string;
   employees?: Employee[];
 }
+
+export interface WorkReport {
+  id: string;
+  employeeId: string;
+  departmentId?: string;
+  weekStartDate: string;
+  weekEndDate: string;
+  tasksCompleted: string;
+  tasksInProgress: string;
+  nextWeekPlans: string;
+  issues: string;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  submittedDate?: string;
+  approvedDate?: string;
+  approvedById?: string;
+  rejectedReason?: string;
+  createdAt: string;
+}

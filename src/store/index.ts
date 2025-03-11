@@ -45,20 +45,6 @@ export const useAppStore = create<StoreState>()(
           academicTitles: state.academicTitles,
           workReports: state.workReports,
         }),
-        version: 1,
-        storage: {
-          getItem: (name) => {
-            const str = localStorage.getItem(name);
-            if (!str) return null;
-            return JSON.parse(str);
-          },
-          setItem: (name, value) => {
-            localStorage.setItem(name, JSON.stringify(value));
-          },
-          removeItem: (name) => {
-            localStorage.removeItem(name);
-          },
-        },
       }
     )
   )
