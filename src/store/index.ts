@@ -26,16 +26,16 @@ type StoreState = ReturnType<typeof createEmployeeSlice> &
 export const useAppStore = create<StoreState>()(
   devtools(
     persist(
-      (set, get) => ({
-        ...createEmployeeSlice(set, get),
-        ...createDepartmentSlice(set, get),
-        ...createPositionSlice(set, get),
-        ...createContractSlice(set, get),
-        ...createAcademicSlice(set, get),
-        ...createRelationshipSlice(set, get),
-        ...createWorkReportSlice(set, get),
-        ...createLeaveSlice(set, get),
-        ...createOvertimeSlice(set),
+      (set, get, api) => ({
+        ...createEmployeeSlice(set, get, api),
+        ...createDepartmentSlice(set, get, api),
+        ...createPositionSlice(set, get, api),
+        ...createContractSlice(set, get, api),
+        ...createAcademicSlice(set, get, api),
+        ...createRelationshipSlice(set, get, api),
+        ...createWorkReportSlice(set, get, api),
+        ...createLeaveSlice(set, get, api),
+        ...createOvertimeSlice(set, get, api),
       }),
       {
         name: 'employee-management-storage',
