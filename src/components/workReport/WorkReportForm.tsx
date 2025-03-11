@@ -217,9 +217,11 @@ export default function WorkReportForm({
                                 </SelectItem>
                               ))
                             ) : (
-                              <SelectItem value="" disabled>
-                                {selectedDepartmentId ? "Không có nhân viên trong đơn vị này" : "Chọn đơn vị trước"}
-                              </SelectItem>
+                              selectedDepartmentId ? (
+                                <SelectItem key="no-employees" value="no-employees">
+                                  Không có nhân viên trong đơn vị này
+                                </SelectItem>
+                              ) : null
                             )}
                           </SelectContent>
                         </Select>
