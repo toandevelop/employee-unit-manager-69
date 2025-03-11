@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Filter, X } from "lucide-react";
 import { useAppStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -16,6 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
 export interface LeaveFilters {
@@ -35,6 +41,7 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
   const { departments, employees, departmentEmployees } = useAppStore();
   const [tempFilters, setTempFilters] = useState<LeaveFilters>(filters);
   const [filteredEmployees, setFilteredEmployees] = useState<typeof employees>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     setTempFilters(filters);
@@ -108,6 +115,7 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
 
   const applyFilters = () => {
     onFilterChange(tempFilters);
+    setIsOpen(false);
   };
 
   const resetFilters = () => {
@@ -125,155 +133,228 @@ export function LeaveFilters({ filters, onFilterChange }: LeaveFiltersProps) {
 
   return (
     <div className="bg-card rounded-md border p-4 mb-6">
-      <h3 className="text-lg font-medium mb-4">Bộ lọc</h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Thời gian</label>
-          <div className="flex space-x-2">
-            <Button 
-              variant={tempFilters.filterType === 'week' ? 'default' : 'outline'} 
-              size="sm"
-              onClick={() => setDateRange('week')}
-            >
-              Tuần
-            </Button>
-            <Button 
-              variant={tempFilters.filterType === 'month' ? 'default' : 'outline'} 
-              size="sm"
-              onClick={() => setDateRange('month')}
-            >
-              Tháng
-            </Button>
-            <Button 
-              variant={tempFilters.filterType === 'year' ? 'default' : 'outline'} 
-              size="sm"
-              onClick={() => setDateRange('year')}
-            >
-              Năm
-            </Button>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <h3 className="text-lg font-medium">Bộ lọc</h3>
+            {(!isOpen && (tempFilters.departmentId || tempFilters.employeeId || tempFilters.filterType !== 'month')) && (
+              <div className="flex flex-wrap gap-1">
+                {tempFilters.filterType !== 'month' && (
+                  <Badge filterType={tempFilters.filterType} />
+                )}
+                {tempFilters.departmentId && (
+                  <Badge 
+                    type="department" 
+                    label={departments.find(d => d.id === tempFilters.departmentId)?.name || ''} 
+                  />
+                )}
+                {tempFilters.employeeId && (
+                  <Badge 
+                    type="employee" 
+                    label={employees.find(e => e.id === tempFilters.employeeId)?.name || ''} 
+                  />
+                )}
+              </div>
+            )}
           </div>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              {isOpen ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
+            </Button>
+          </CollapsibleTrigger>
         </div>
         
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Từ ngày</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !tempFilters.startDate && "text-muted-foreground"
-                )}
+        <CollapsibleContent>
+          <div className="pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Khoảng thời gian</label>
+              <div className="flex space-x-1">
+                <Button 
+                  variant={tempFilters.filterType === 'week' ? 'default' : 'outline'} 
+                  size="sm" className="flex-1 px-2"
+                  onClick={() => setDateRange('week')}
+                >
+                  Tuần
+                </Button>
+                <Button 
+                  variant={tempFilters.filterType === 'month' ? 'default' : 'outline'} 
+                  size="sm" className="flex-1 px-2"
+                  onClick={() => setDateRange('month')}
+                >
+                  Tháng
+                </Button>
+                <Button 
+                  variant={tempFilters.filterType === 'year' ? 'default' : 'outline'} 
+                  size="sm" className="flex-1 px-2"
+                  onClick={() => setDateRange('year')}
+                >
+                  Năm
+                </Button>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Từ ngày</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !tempFilters.startDate && "text-muted-foreground"
+                    )}
+                    size="sm"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {tempFilters.startDate ? (
+                      format(tempFilters.startDate, "dd/MM/yyyy")
+                    ) : (
+                      <span>Chọn ngày</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={tempFilters.startDate}
+                    onSelect={(date) => 
+                      setTempFilters(prev => ({ ...prev, startDate: date, filterType: 'custom' }))
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Đến ngày</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !tempFilters.endDate && "text-muted-foreground"
+                    )}
+                    size="sm"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {tempFilters.endDate ? (
+                      format(tempFilters.endDate, "dd/MM/yyyy")
+                    ) : (
+                      <span>Chọn ngày</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={tempFilters.endDate}
+                    onSelect={(date) => 
+                      setTempFilters(prev => ({ ...prev, endDate: date, filterType: 'custom' }))
+                    }
+                    initialFocus
+                    disabled={(date) => date < (tempFilters.startDate || new Date())}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Đơn vị</label>
+              <Select 
+                value={tempFilters.departmentId || "all-departments"} 
+                onValueChange={(value) => handleDepartmentChange(value === "all-departments" ? "" : value)}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {tempFilters.startDate ? (
-                  format(tempFilters.startDate, "dd/MM/yyyy")
-                ) : (
-                  <span>Chọn ngày</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={tempFilters.startDate}
-                onSelect={(date) => 
-                  setTempFilters(prev => ({ ...prev, startDate: date, filterType: 'custom' }))
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Tất cả đơn vị" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all-departments">Tất cả đơn vị</SelectItem>
+                  {departments.map((department) => (
+                    <SelectItem key={department.id} value={department.id}>
+                      {department.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-1 md:col-span-2 lg:col-span-1">
+              <label className="text-sm font-medium">Nhân viên</label>
+              <Select 
+                value={tempFilters.employeeId || "all-employees"} 
+                onValueChange={(value) => 
+                  setTempFilters(prev => ({ ...prev, employeeId: value === "all-employees" ? undefined : value }))
                 }
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Đến ngày</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !tempFilters.endDate && "text-muted-foreground"
-                )}
+                disabled={filteredEmployees.length === 0}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {tempFilters.endDate ? (
-                  format(tempFilters.endDate, "dd/MM/yyyy")
-                ) : (
-                  <span>Chọn ngày</span>
-                )}
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Tất cả nhân viên" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all-employees">Tất cả nhân viên</SelectItem>
+                  {(tempFilters.departmentId ? filteredEmployees : employees).map((employee) => (
+                    <SelectItem key={employee.id} value={employee.id}>
+                      {employee.code} - {employee.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex justify-end space-x-2 md:col-span-2 lg:col-span-3 items-end">
+              <Button variant="outline" size="sm" onClick={resetFilters}>
+                <X className="h-4 w-4 mr-2" />
+                Đặt lại
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={tempFilters.endDate}
-                onSelect={(date) => 
-                  setTempFilters(prev => ({ ...prev, endDate: date, filterType: 'custom' }))
-                }
-                initialFocus
-                disabled={(date) => date < (tempFilters.startDate || new Date())}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Đơn vị</label>
-          <Select 
-            value={tempFilters.departmentId} 
-            onValueChange={handleDepartmentChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Tất cả đơn vị" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-departments">Tất cả đơn vị</SelectItem>
-              {departments.map((department) => (
-                <SelectItem key={department.id} value={department.id}>
-                  {department.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Nhân viên</label>
-          <Select 
-            value={tempFilters.employeeId} 
-            onValueChange={(value) => 
-              setTempFilters(prev => ({ ...prev, employeeId: value === "all-employees" ? undefined : value }))
-            }
-            disabled={!tempFilters.departmentId && filteredEmployees.length === 0}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Tất cả nhân viên" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-employees">Tất cả nhân viên</SelectItem>
-              {(tempFilters.departmentId && tempFilters.departmentId !== "all-departments" ? filteredEmployees : employees).map((employee) => (
-                <SelectItem key={employee.id} value={employee.id}>
-                  {employee.code} - {employee.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      <div className="flex justify-end space-x-2">
-        <Button variant="outline" onClick={resetFilters}>
-          Đặt lại
-        </Button>
-        <Button onClick={applyFilters}>
-          Áp dụng
-        </Button>
-      </div>
+              <Button size="sm" onClick={applyFilters}>
+                <Filter className="h-4 w-4 mr-2" />
+                Áp dụng
+              </Button>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
+  );
+}
+
+// Badge component for displaying active filters
+function Badge({ 
+  type, 
+  label,
+  filterType 
+}: { 
+  type?: 'department' | 'employee'; 
+  label?: string;
+  filterType?: 'custom' | 'week' | 'month' | 'year' 
+}) {
+  let content = '';
+  
+  if (filterType) {
+    switch (filterType) {
+      case 'week':
+        content = 'Tuần này';
+        break;
+      case 'month':
+        content = 'Tháng này';
+        break;
+      case 'year':
+        content = 'Năm này';
+        break;
+      case 'custom':
+        content = 'Tùy chỉnh';
+        break;
+    }
+  } else if (type && label) {
+    content = `${type === 'department' ? 'Đơn vị' : 'NV'}: ${label}`;
+  }
+  
+  return (
+    <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-primary text-primary-foreground">
+      {content}
+    </span>
   );
 }

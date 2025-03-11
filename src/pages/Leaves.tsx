@@ -6,17 +6,21 @@ import { Button } from "@/components/ui/button";
 import { LeaveForm } from "@/components/leave/LeaveForm";
 import { LeaveTable } from "@/components/leave/LeaveTable";
 import { LeaveDashboard } from "@/components/leave/LeaveDashboard";
-import { LeaveFilters } from "@/components/leave/LeaveFilters";
+import { LeaveFilters, LeaveFilters as LeaveFiltersType } from "@/components/leave/LeaveFilters";
 
 const Leaves = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [filters, setFilters] = useState({
-    filterType: 'month' as const,
+  const [filters, setFilters] = useState<LeaveFiltersType>({
+    filterType: 'month',
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
-    departmentId: undefined as string | undefined,
-    employeeId: undefined as string | undefined
+    departmentId: undefined,
+    employeeId: undefined
   });
+
+  const handleFilterChange = (newFilters: LeaveFiltersType) => {
+    setFilters(newFilters);
+  };
 
   return (
     <motion.div
@@ -50,7 +54,7 @@ const Leaves = () => {
 
       <LeaveFilters
         filters={filters}
-        onFilterChange={setFilters}
+        onFilterChange={handleFilterChange}
       />
 
       <LeaveTable />

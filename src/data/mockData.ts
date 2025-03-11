@@ -1,5 +1,4 @@
-
-import { Employee, Department, Position, DepartmentEmployee, PositionEmployee } from "../types";
+import { Employee, Department, Position, DepartmentEmployee, PositionEmployee, LeaveType, Leave } from "../types";
 
 export const positions: Position[] = [
   { id: "1", name: "Giám đốc", positionEmployees: [] },
@@ -149,7 +148,7 @@ export const employees: Employee[] = [
     contractDate: "2020-10-15",
     departmentEmployees: [],
     positionEmployees: [],
-    academicDegreeId: "3" // Đại học
+    academicDegreeId: "3" // Đ��i học
   },
   {
     id: "10",
@@ -335,6 +334,244 @@ export const positionEmployees: PositionEmployee[] = [
   { id: "13", employeeId: "2", positionId: "2" },
   { id: "14", employeeId: "4", positionId: "4" },
   { id: "15", employeeId: "7", positionId: "4" },
+];
+
+export const leaveTypes: LeaveType[] = [
+  {
+    id: "1",
+    code: "NP-VP",
+    name: "Nghỉ phép có lương",
+    leaves: []
+  },
+  {
+    id: "2",
+    code: "NP-KL",
+    name: "Nghỉ phép không lương",
+    leaves: []
+  },
+  {
+    id: "3",
+    code: "NP-BH",
+    name: "Nghỉ phép bảo hiểm",
+    leaves: []
+  },
+  {
+    id: "4",
+    code: "NP-OM",
+    name: "Nghỉ ốm",
+    leaves: []
+  },
+  {
+    id: "5",
+    code: "NP-TS",
+    name: "Nghỉ thai sản",
+    leaves: []
+  },
+  {
+    id: "6",
+    code: "NP-CC",
+    name: "Nghỉ chăm con",
+    leaves: []
+  },
+  {
+    id: "7",
+    code: "NP-HN",
+    name: "Nghỉ hôn nhân",
+    leaves: []
+  },
+  {
+    id: "8",
+    code: "NP-TT",
+    name: "Nghỉ tang tế",
+    leaves: []
+  },
+  {
+    id: "9",
+    code: "NP-HC",
+    name: "Nghỉ học tập",
+    leaves: []
+  },
+  {
+    id: "10",
+    code: "NP-CT",
+    name: "Nghỉ công tác",
+    leaves: []
+  },
+  {
+    id: "11",
+    code: "NP-QT",
+    name: "Nghỉ quốc tế",
+    leaves: []
+  },
+  {
+    id: "12",
+    code: "NP-DB",
+    name: "Nghỉ đặc biệt",
+    leaves: []
+  }
+];
+
+export const leaves: Leave[] = [
+  {
+    id: "1",
+    employeeId: "1",
+    leaveTypeId: "1",
+    departmentId: "1",
+    startDate: "2023-05-01",
+    endDate: "2023-05-03",
+    numberOfDays: 3,
+    status: "approved",
+    approvedById: "2",
+    approvedDate: "2023-04-25",
+    departmentApprovedById: "3",
+    departmentApprovedDate: "2023-04-23",
+    createdAt: "2023-04-20"
+  },
+  {
+    id: "2",
+    employeeId: "2",
+    leaveTypeId: "2",
+    departmentId: "2",
+    startDate: "2023-06-10",
+    endDate: "2023-06-15",
+    numberOfDays: 6,
+    status: "rejected",
+    rejectedById: "1",
+    rejectedDate: "2023-06-05",
+    rejectionReason: "Thời gian nghỉ phép quá dài",
+    createdAt: "2023-06-01"
+  },
+  {
+    id: "3",
+    employeeId: "3",
+    leaveTypeId: "3",
+    departmentId: "1",
+    startDate: "2023-07-20",
+    endDate: "2023-07-22",
+    numberOfDays: 3,
+    status: "department_approved",
+    departmentApprovedById: "1",
+    departmentApprovedDate: "2023-07-18",
+    createdAt: "2023-07-15"
+  },
+  {
+    id: "4",
+    employeeId: "4",
+    leaveTypeId: "4",
+    departmentId: "2",
+    startDate: "2023-08-05",
+    endDate: "2023-08-10",
+    numberOfDays: 6,
+    status: "pending",
+    createdAt: "2023-08-01"
+  },
+  {
+    id: "5",
+    employeeId: "5",
+    leaveTypeId: "5",
+    departmentId: "3",
+    startDate: "2023-09-15",
+    endDate: "2023-10-15",
+    numberOfDays: 31,
+    status: "approved",
+    approvedById: "1",
+    approvedDate: "2023-09-10",
+    departmentApprovedById: "3",
+    departmentApprovedDate: "2023-09-08",
+    createdAt: "2023-09-01"
+  },
+  {
+    id: "6",
+    employeeId: "6",
+    leaveTypeId: "6",
+    departmentId: "3",
+    startDate: "2023-11-01",
+    endDate: "2023-11-05",
+    numberOfDays: 5,
+    status: "rejected",
+    rejectedById: "3",
+    rejectedDate: "2023-10-28",
+    rejectionReason: "Thiếu nhân viên trong thời gian này",
+    createdAt: "2023-10-25"
+  },
+  {
+    id: "7",
+    employeeId: "7",
+    leaveTypeId: "7",
+    departmentId: "4",
+    startDate: "2023-12-20",
+    endDate: "2023-12-25",
+    numberOfDays: 6,
+    status: "approved",
+    approvedById: "1",
+    approvedDate: "2023-12-15",
+    departmentApprovedById: "5",
+    departmentApprovedDate: "2023-12-13",
+    createdAt: "2023-12-10"
+  },
+  {
+    id: "8",
+    employeeId: "8",
+    leaveTypeId: "8",
+    departmentId: "2",
+    startDate: "2024-01-05",
+    endDate: "2024-01-10",
+    numberOfDays: 6,
+    status: "department_approved",
+    departmentApprovedById: "3",
+    departmentApprovedDate: "2024-01-03",
+    createdAt: "2024-01-01"
+  },
+  {
+    id: "9",
+    employeeId: "9",
+    leaveTypeId: "9",
+    departmentId: "3",
+    startDate: "2024-02-15",
+    endDate: "2024-02-20",
+    numberOfDays: 6,
+    status: "pending",
+    createdAt: "2024-02-10"
+  },
+  {
+    id: "10",
+    employeeId: "10",
+    leaveTypeId: "10",
+    departmentId: "1",
+    startDate: "2024-03-01",
+    endDate: "2024-03-05",
+    numberOfDays: 5,
+    status: "approved",
+    approvedById: "1",
+    approvedDate: "2024-02-25",
+    departmentApprovedById: "3",
+    departmentApprovedDate: "2024-02-23",
+    createdAt: "2024-02-20"
+  },
+  {
+    id: "11",
+    employeeId: "1",
+    leaveTypeId: "11",
+    departmentId: "1",
+    startDate: "2024-04-10",
+    endDate: "2024-04-12",
+    numberOfDays: 3,
+    status: "pending",
+    createdAt: "2024-04-05"
+  },
+  {
+    id: "12",
+    employeeId: "2",
+    leaveTypeId: "12",
+    departmentId: "2",
+    startDate: "2024-05-01",
+    endDate: "2024-05-03",
+    numberOfDays: 3,
+    status: "department_approved",
+    departmentApprovedById: "3",
+    departmentApprovedDate: "2024-04-28",
+    createdAt: "2024-04-25"
+  }
 ];
 
 departmentEmployees.forEach(de => {

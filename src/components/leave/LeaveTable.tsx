@@ -32,7 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Edit, Trash, CheckCircle } from "lucide-react";
+import { Edit, Trash, CheckCircle, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { LeaveForm } from "./LeaveForm";
 import { toast } from "sonner";
 import { LeaveFilters } from "./LeaveFilters";
@@ -134,6 +134,95 @@ function StatusBadge({ status }: { status: Leave['status'] }) {
   }
 }
 
+// Pagination Component
+function Pagination({ 
+  currentPage, 
+  totalPages, 
+  onPageChange 
+}: { 
+  currentPage: number; 
+  totalPages: number; 
+  onPageChange: (page: number) => void 
+}) {
+  const maxPageDisplay = 5;
+  const startPage = Math.max(1, currentPage - Math.floor(maxPageDisplay / 2));
+  const endPage = Math.min(totalPages, startPage + maxPageDisplay - 1);
+  
+  const pages = [];
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+  
+  return (
+    <div className="flex items-center justify-center space-x-2 mt-4">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        <ChevronLeft className="h-4 w-4" />
+        <span className="sr-only sm:not-sr-only sm:ml-2">Trước</span>
+      </Button>
+      
+      {startPage > 1 && (
+        <>
+          <Button
+            variant={currentPage === 1 ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPageChange(1)}
+          >
+            1
+          </Button>
+          {startPage > 2 && (
+            <Button variant="outline" size="sm" disabled>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          )}
+        </>
+      )}
+      
+      {pages.map(page => (
+        <Button
+          key={page}
+          variant={currentPage === page ? "default" : "outline"}
+          size="sm"
+          onClick={() => onPageChange(page)}
+        >
+          {page}
+        </Button>
+      ))}
+      
+      {endPage < totalPages && (
+        <>
+          {endPage < totalPages - 1 && (
+            <Button variant="outline" size="sm" disabled>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            variant={currentPage === totalPages ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPageChange(totalPages)}
+          >
+            {totalPages}
+          </Button>
+        </>
+      )}
+      
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        <span className="sr-only sm:not-sr-only sm:mr-2">Sau</span>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
 export function LeaveTable() {
   const { 
     leaves, 
@@ -163,6 +252,10 @@ export function LeaveTable() {
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
   });
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Filter leaves based on filters
   const filteredLeaves = leaves.filter(leave => {
@@ -193,6 +286,17 @@ export function LeaveTable() {
     
     return true;
   });
+  
+  // Calculate pagination
+  const totalItems = filteredLeaves.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedLeaves = filteredLeaves.slice(startIndex, startIndex + itemsPerPage);
+  
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   // Handle edit
   const handleEdit = (leave: Leave) => {
@@ -293,13 +397,19 @@ export function LeaveTable() {
     return leaveType ? leaveType.name : 'N/A';
   };
 
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nhân viên</TableHead>
+              <TableHead>Mã NV</TableHead>
+              <TableHead>Tên nhân viên</TableHead>
               <TableHead>Đơn vị</TableHead>
               <TableHead>Loại nghỉ phép</TableHead>
               <TableHead>Ngày bắt đầu</TableHead>
@@ -310,74 +420,87 @@ export function LeaveTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredLeaves.length === 0 ? (
+            {paginatedLeaves.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center h-24">
+                <TableCell colSpan={9} className="text-center h-24">
                   Không có dữ liệu đơn nghỉ phép
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLeaves.map((leave) => (
-                <TableRow key={leave.id}>
-                  <TableCell>{getEmployeeName(leave.employeeId)}</TableCell>
-                  <TableCell>{getDepartmentName(leave.departmentId)}</TableCell>
-                  <TableCell>{getLeaveTypeName(leave.leaveTypeId)}</TableCell>
-                  <TableCell>{format(new Date(leave.startDate), "dd/MM/yyyy")}</TableCell>
-                  <TableCell>{format(new Date(leave.endDate), "dd/MM/yyyy")}</TableCell>
-                  <TableCell className="text-center">{leave.numberOfDays}</TableCell>
-                  <TableCell className="text-center">
-                    <StatusBadge status={leave.status} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
-                      {leave.status === 'pending' && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDepartmentApproval(leave)}
-                          title="Duyệt (Đơn vị)"
-                        >
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        </Button>
-                      )}
-                      
-                      {leave.status === 'department_approved' && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleManagementApproval(leave)}
-                          title="Duyệt (Quản lý)"
-                        >
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        </Button>
-                      )}
-                      
-                      {(leave.status === 'pending' || leave.status === 'department_approved') && (
-                        <>
+              paginatedLeaves.map((leave) => {
+                const employee = employees.find(emp => emp.id === leave.employeeId);
+                return (
+                  <TableRow key={leave.id}>
+                    <TableCell>{employee?.code || 'N/A'}</TableCell>
+                    <TableCell>{employee?.name || 'N/A'}</TableCell>
+                    <TableCell>{getDepartmentName(leave.departmentId)}</TableCell>
+                    <TableCell>{getLeaveTypeName(leave.leaveTypeId)}</TableCell>
+                    <TableCell>{format(new Date(leave.startDate), "dd/MM/yyyy")}</TableCell>
+                    <TableCell>{format(new Date(leave.endDate), "dd/MM/yyyy")}</TableCell>
+                    <TableCell className="text-center">{leave.numberOfDays}</TableCell>
+                    <TableCell className="text-center">
+                      <StatusBadge status={leave.status} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end space-x-2">
+                        {leave.status === 'pending' && (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleEdit(leave)}
+                            onClick={() => handleDepartmentApproval(leave)}
+                            title="Duyệt (Đơn vị)"
                           >
-                            <Edit className="h-4 w-4" />
+                            <CheckCircle className="h-4 w-4 text-green-500" />
                           </Button>
+                        )}
+                        
+                        {leave.status === 'department_approved' && (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDelete(leave)}
+                            onClick={() => handleManagementApproval(leave)}
+                            title="Duyệt (Quản lý)"
                           >
-                            <Trash className="h-4 w-4" />
+                            <CheckCircle className="h-4 w-4 text-green-500" />
                           </Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        )}
+                        
+                        {(leave.status === 'pending' || leave.status === 'department_approved') && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(leave)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(leave)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
       </div>
+      
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={handlePageChange} 
+        />
+      )}
 
       {/* Edit Form Dialog */}
       <LeaveForm
