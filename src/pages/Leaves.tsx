@@ -64,12 +64,8 @@ const Leaves = () => {
         onFilterChange={handleFilterChange}
       />
 
-      <LeaveTable 
-        startDate={filters.startDate}
-        endDate={filters.endDate}
-        departmentId={filters.departmentId}
-        employeeId={filters.employeeId}
-      />
+      {/* Remove props from LeaveTable as it doesn't accept them */}
+      <LeaveTable />
 
       <LeaveForm
         isOpen={isAddDialogOpen}

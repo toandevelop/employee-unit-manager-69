@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useAppStore } from "@/store";
@@ -46,7 +45,6 @@ interface LeaveApprovalProps {
   onReject: (reason: string) => void;
 }
 
-// Approval Dialog Component
 function LeaveApproval({ leave, isOpen, type, onOpenChange, onApprove, onReject }: LeaveApprovalProps) {
   const [rejectionReason, setRejectionReason] = useState("");
 
@@ -118,7 +116,6 @@ function LeaveApproval({ leave, isOpen, type, onOpenChange, onApprove, onReject 
   );
 }
 
-// Status Badge Component
 function StatusBadge({ status }: { status: Leave['status'] }) {
   switch (status) {
     case 'pending':
@@ -134,7 +131,6 @@ function StatusBadge({ status }: { status: Leave['status'] }) {
   }
 }
 
-// Pagination Component
 function Pagination({ 
   currentPage, 
   totalPages, 
@@ -253,18 +249,14 @@ export function LeaveTable() {
     endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
   });
   
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Filter leaves based on filters
   const filteredLeaves = leaves.filter(leave => {
     const leaveStartDate = new Date(leave.startDate);
     const leaveEndDate = new Date(leave.endDate);
     
-    // Filter by date range
     if (filters.startDate && filters.endDate) {
-      // Check if leave period overlaps with filter period
       const isInDateRange = (
         (leaveStartDate >= filters.startDate && leaveStartDate <= filters.endDate) ||
         (leaveEndDate >= filters.startDate && leaveEndDate <= filters.endDate) ||
@@ -274,12 +266,10 @@ export function LeaveTable() {
       if (!isInDateRange) return false;
     }
     
-    // Filter by department
     if (filters.departmentId && filters.departmentId !== "all-departments" && leave.departmentId !== filters.departmentId) {
       return false;
     }
     
-    // Filter by employee
     if (filters.employeeId && filters.employeeId !== "all-employees" && leave.employeeId !== filters.employeeId) {
       return false;
     }
@@ -287,18 +277,15 @@ export function LeaveTable() {
     return true;
   });
   
-  // Calculate pagination
   const totalItems = filteredLeaves.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedLeaves = filteredLeaves.slice(startIndex, startIndex + itemsPerPage);
   
-  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [filters]);
 
-  // Handle edit
   const handleEdit = (leave: Leave) => {
     setSelectedLeave({
       ...leave,
@@ -309,13 +296,11 @@ export function LeaveTable() {
     setIsFormOpen(true);
   };
 
-  // Handle delete
   const handleDelete = (leave: Leave) => {
     setSelectedLeave(leave);
     setIsDeleteDialogOpen(true);
   };
 
-  // Confirm delete
   const confirmDelete = () => {
     if (selectedLeave) {
       deleteLeave(selectedLeave.id);
@@ -324,7 +309,6 @@ export function LeaveTable() {
     }
   };
 
-  // Handle department approval
   const handleDepartmentApproval = (leave: Leave) => {
     setSelectedLeave({
       ...leave,
@@ -336,7 +320,6 @@ export function LeaveTable() {
     setIsApprovalDialogOpen(true);
   };
 
-  // Handle management approval
   const handleManagementApproval = (leave: Leave) => {
     setSelectedLeave({
       ...leave,
@@ -348,11 +331,9 @@ export function LeaveTable() {
     setIsApprovalDialogOpen(true);
   };
 
-  // Approve leave (department or management)
   const approveSelectedLeave = () => {
     if (!selectedLeave) return;
     
-    // For now, we'll use a fixed ID for the approver (in a real app, this would be the current user's ID)
     const approverId = "current-user-id";
     
     if (approvalType === 'department') {
@@ -366,11 +347,9 @@ export function LeaveTable() {
     setIsApprovalDialogOpen(false);
   };
 
-  // Reject leave
   const rejectSelectedLeave = (reason: string) => {
     if (!selectedLeave) return;
     
-    // For now, we'll use a fixed ID for the rejector (in a real app, this would be the current user's ID)
     const rejectorId = "current-user-id";
     
     rejectLeave(selectedLeave.id, rejectorId, reason);
@@ -379,25 +358,21 @@ export function LeaveTable() {
     setIsApprovalDialogOpen(false);
   };
 
-  // Get employee name by ID
   const getEmployeeName = (employeeId: string) => {
     const employee = employees.find(emp => emp.id === employeeId);
     return employee ? `${employee.code} - ${employee.name}` : 'N/A';
   };
 
-  // Get department name by ID
   const getDepartmentName = (departmentId: string) => {
     const department = departments.find(dept => dept.id === departmentId);
     return department ? department.name : 'N/A';
   };
 
-  // Get leave type name by ID
   const getLeaveTypeName = (leaveTypeId: string) => {
     const leaveType = leaveTypes.find(type => type.id === leaveTypeId);
     return leaveType ? leaveType.name : 'N/A';
   };
 
-  // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -493,7 +468,6 @@ export function LeaveTable() {
         </Table>
       </div>
       
-      {/* Pagination */}
       {totalPages > 1 && (
         <Pagination 
           currentPage={currentPage} 
@@ -502,7 +476,6 @@ export function LeaveTable() {
         />
       )}
 
-      {/* Edit Form Dialog */}
       <LeaveForm
         leave={selectedLeave}
         isOpen={isFormOpen}
@@ -510,7 +483,6 @@ export function LeaveTable() {
         onSuccess={() => setSelectedLeave(undefined)}
       />
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -526,7 +498,6 @@ export function LeaveTable() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Approval Dialog */}
       {selectedLeave && (
         <LeaveApproval
           leave={selectedLeave}
