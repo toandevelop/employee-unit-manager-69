@@ -16,7 +16,7 @@ export interface OvertimeTypeActions {
 export type OvertimeTypeSlice = OvertimeTypeState & OvertimeTypeActions;
 
 export const createOvertimeTypeActions = <T extends OvertimeTypeState>(
-  set: StateCreator<T>['setState']
+  set: (fn: (state: T) => Partial<T>) => void
 ): OvertimeTypeActions => ({
   addOvertimeType: (overtimeType) => {
     set((state) => ({

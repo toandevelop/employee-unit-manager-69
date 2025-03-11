@@ -21,7 +21,7 @@ export interface OvertimeActions {
 export type OvertimeSlice = OvertimeState & OvertimeActions;
 
 export const createOvertimeActions = <T extends OvertimeState>(
-  set: StateCreator<T>['setState']
+  set: (fn: (state: T) => Partial<T>) => void
 ): OvertimeActions => ({
   addOvertime: (overtime) => {
     // Calculate hours from start and end time
