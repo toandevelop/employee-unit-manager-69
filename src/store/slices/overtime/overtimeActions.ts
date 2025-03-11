@@ -21,13 +21,14 @@ export interface OvertimeActions {
 export type OvertimeSlice = OvertimeState & OvertimeActions;
 
 export const createOvertimeActions = <T extends OvertimeState>(
-  set: (fn: (state: T) => Partial<T>) => void
+  set: (fn: (state: T) => T) => void
 ): OvertimeActions => ({
   addOvertime: (overtime) => {
     // Calculate hours from start and end time
     const hours = calculateHoursFromTimes(overtime.startTime, overtime.endTime);
     
     set((state) => ({
+      ...state,
       overtimes: [
         ...state.overtimes,
         {
@@ -43,6 +44,7 @@ export const createOvertimeActions = <T extends OvertimeState>(
   
   updateOvertime: (id, overtime) => {
     set((state) => ({
+      ...state,
       overtimes: state.overtimes.map((ot) => {
         if (ot.id === id) {
           // Calculate hours if both startTime and endTime are provided
@@ -64,12 +66,14 @@ export const createOvertimeActions = <T extends OvertimeState>(
   
   deleteOvertime: (id) => {
     set((state) => ({
+      ...state,
       overtimes: state.overtimes.filter((ot) => ot.id !== id)
     }));
   },
   
   departmentApproveOvertime: (id, approverEmployeeId) => {
     set((state) => ({
+      ...state,
       overtimes: state.overtimes.map((ot) => 
         ot.id === id 
           ? { 
@@ -85,6 +89,7 @@ export const createOvertimeActions = <T extends OvertimeState>(
   
   approveOvertime: (id, approverEmployeeId) => {
     set((state) => ({
+      ...state,
       overtimes: state.overtimes.map((ot) => 
         ot.id === id 
           ? { 
@@ -100,6 +105,7 @@ export const createOvertimeActions = <T extends OvertimeState>(
   
   rejectOvertime: (id, rejecterEmployeeId, reason) => {
     set((state) => ({
+      ...state,
       overtimes: state.overtimes.map((ot) => 
         ot.id === id 
           ? { 

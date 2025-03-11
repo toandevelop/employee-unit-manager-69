@@ -16,10 +16,11 @@ export interface OvertimeTypeActions {
 export type OvertimeTypeSlice = OvertimeTypeState & OvertimeTypeActions;
 
 export const createOvertimeTypeActions = <T extends OvertimeTypeState>(
-  set: (fn: (state: T) => Partial<T>) => void
+  set: (fn: (state: T) => T) => void
 ): OvertimeTypeActions => ({
   addOvertimeType: (overtimeType) => {
     set((state) => ({
+      ...state,
       overtimeTypes: [
         ...state.overtimeTypes,
         {
@@ -33,6 +34,7 @@ export const createOvertimeTypeActions = <T extends OvertimeTypeState>(
   
   updateOvertimeType: (id, overtimeType) => {
     set((state) => ({
+      ...state,
       overtimeTypes: state.overtimeTypes.map((ot) => 
         ot.id === id ? { ...ot, ...overtimeType } : ot
       )
@@ -41,6 +43,7 @@ export const createOvertimeTypeActions = <T extends OvertimeTypeState>(
   
   deleteOvertimeType: (id) => {
     set((state) => ({
+      ...state,
       overtimeTypes: state.overtimeTypes.filter((ot) => ot.id !== id)
     }));
   },

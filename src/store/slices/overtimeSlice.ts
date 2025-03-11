@@ -16,12 +16,12 @@ export interface OvertimeSliceState extends OvertimeTypeState, OvertimeState {}
 export interface OvertimeSliceActions extends OvertimeTypeActions, OvertimeActions {}
 export type OvertimeSlice = OvertimeSliceState & OvertimeSliceActions;
 
-export const createOvertimeSlice: StateCreator<OvertimeSlice> = (set) => ({
+export const createOvertimeSlice: StateCreator<OvertimeSlice> = (set, get, api) => ({
   // Initial state
   overtimeTypes: initialOvertimeTypes,
   overtimes: initialOvertimes,
   
   // Combine actions
-  ...createOvertimeTypeActions<OvertimeSlice>(set),
-  ...createOvertimeActions<OvertimeSlice>(set)
+  ...createOvertimeTypeActions(set),
+  ...createOvertimeActions(set)
 });
