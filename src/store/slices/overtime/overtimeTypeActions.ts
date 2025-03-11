@@ -15,36 +15,42 @@ export interface OvertimeTypeActions {
 
 export type OvertimeTypeSlice = OvertimeTypeState & OvertimeTypeActions;
 
-export const createOvertimeTypeActions = <T extends OvertimeTypeState>(
-  set: (fn: (state: T) => T) => void
+export const createOvertimeTypeActions = (
+  set: (fn: (state: any) => any) => void
 ): OvertimeTypeActions => ({
   addOvertimeType: (overtimeType) => {
-    set((state) => ({
-      ...state,
-      overtimeTypes: [
-        ...state.overtimeTypes,
-        {
-          ...overtimeType,
-          id: uuidv4(),
-          overtimes: []
-        }
-      ]
-    }));
+    set((state) => {
+      return {
+        ...state,
+        overtimeTypes: [
+          ...state.overtimeTypes,
+          {
+            ...overtimeType,
+            id: uuidv4(),
+            overtimes: []
+          }
+        ]
+      };
+    });
   },
   
   updateOvertimeType: (id, overtimeType) => {
-    set((state) => ({
-      ...state,
-      overtimeTypes: state.overtimeTypes.map((ot) => 
-        ot.id === id ? { ...ot, ...overtimeType } : ot
-      )
-    }));
+    set((state) => {
+      return {
+        ...state,
+        overtimeTypes: state.overtimeTypes.map((ot) => 
+          ot.id === id ? { ...ot, ...overtimeType } : ot
+        )
+      };
+    });
   },
   
   deleteOvertimeType: (id) => {
-    set((state) => ({
-      ...state,
-      overtimeTypes: state.overtimeTypes.filter((ot) => ot.id !== id)
-    }));
+    set((state) => {
+      return {
+        ...state,
+        overtimeTypes: state.overtimeTypes.filter((ot) => ot.id !== id)
+      };
+    });
   },
 });
