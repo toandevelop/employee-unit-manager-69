@@ -53,8 +53,8 @@ const TimeEntryDashboard = () => {
   const filteredEntries = timeEntries.filter(entry => {
     const entryDate = new Date(entry.workDate);
     const isInDateRange = entryDate >= dateRange.from && entryDate <= dateRange.to;
-    const isInDepartment = departmentId ? entry.departmentId === departmentId : true;
-    const isForEmployee = employeeId ? entry.employeeId === employeeId : true;
+    const isInDepartment = departmentId === null || departmentId === 'all' ? true : entry.departmentId === departmentId;
+    const isForEmployee = employeeId === null || employeeId === 'all' ? true : entry.employeeId === employeeId;
     return isInDateRange && isInDepartment && isForEmployee;
   });
 

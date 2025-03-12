@@ -1,11 +1,15 @@
 
 import { motion } from 'framer-motion';
+import { useAppStore } from '@/store';
 import { DeviceSyncDashboard } from '@/components/timekeeping/DeviceSyncDashboard';
 import { RawDataTable } from '@/components/timekeeping/RawDataTable';
-import { useAppStore } from '@/store';
 
 const DeviceSyncPage = () => {
   const { syncDeviceData } = useAppStore();
+  
+  const handleSync = (deviceId: string) => {
+    syncDeviceData(deviceId);
+  };
   
   return (
     <motion.div
@@ -16,12 +20,16 @@ const DeviceSyncPage = () => {
       className="space-y-6"
     >
       <div>
-        <h1 className="text-3xl font-bold">Đồng bộ dữ liệu chấm công</h1>
-        <p className="text-muted-foreground mt-1">Quản lý thiết bị và đồng bộ dữ liệu</p>
+        <h1 className="text-3xl font-bold">Đồng bộ thiết bị chấm công</h1>
+        <p className="text-muted-foreground mt-1">Quản lý thiết bị và đồng bộ dữ liệu chấm công</p>
       </div>
       
-      <DeviceSyncDashboard onSync={syncDeviceData} />
-      <RawDataTable />
+      <DeviceSyncDashboard onSync={handleSync} />
+      
+      <div className="bg-white p-6 rounded-lg border">
+        <h2 className="text-xl font-semibold mb-4">Dữ liệu chấm công thô</h2>
+        <RawDataTable />
+      </div>
     </motion.div>
   );
 };

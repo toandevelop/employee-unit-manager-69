@@ -117,14 +117,14 @@ const TimeEntryFilters: React.FC<TimeEntryFiltersProps> = ({
           {/* Department filter */}
           <div className="grid gap-2">
             <Select 
-              value={departmentId || ''} 
+              value={departmentId || undefined} 
               onValueChange={(value) => setDepartmentId(value || null)}
             >
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Chọn đơn vị" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tất cả đơn vị</SelectItem>
+                <SelectItem value="all">Tất cả đơn vị</SelectItem>
                 {departments.map((department) => (
                   <SelectItem key={department.id} value={department.id}>
                     {department.name}
@@ -137,14 +137,14 @@ const TimeEntryFilters: React.FC<TimeEntryFiltersProps> = ({
           {/* Employee filter */}
           <div className="grid gap-2">
             <Select 
-              value={employeeId || ''} 
+              value={employeeId || undefined} 
               onValueChange={(value) => setEmployeeId(value || null)}
             >
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Chọn nhân viên" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tất cả nhân viên</SelectItem>
+                <SelectItem value="all">Tất cả nhân viên</SelectItem>
                 {employees.map((employee) => (
                   <SelectItem key={employee.id} value={employee.id}>
                     {employee.name}
