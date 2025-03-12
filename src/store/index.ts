@@ -13,6 +13,7 @@ import { createOvertimeSlice } from './slices/overtimeSlice';
 import { createWorkShiftSlice } from './slices/workShiftSlice';
 import { createTimeEntrySlice } from './slices/timeEntrySlice';
 import { createTimekeepingDeviceSlice } from './slices/timekeepingDeviceSlice';
+import { createRecruitmentSlice } from './slices/recruitmentSlice';
 
 // Define the store type to include all slice properties
 type StoreState = ReturnType<typeof createEmployeeSlice> &
@@ -26,7 +27,8 @@ type StoreState = ReturnType<typeof createEmployeeSlice> &
   ReturnType<typeof createOvertimeSlice> &
   ReturnType<typeof createWorkShiftSlice> &
   ReturnType<typeof createTimeEntrySlice> &
-  ReturnType<typeof createTimekeepingDeviceSlice>;
+  ReturnType<typeof createTimekeepingDeviceSlice> &
+  ReturnType<typeof createRecruitmentSlice>;
 
 // Combine all slices into a single store
 export const useAppStore = create<StoreState>()(
@@ -45,6 +47,7 @@ export const useAppStore = create<StoreState>()(
         ...createWorkShiftSlice(set, get, api),
         ...createTimeEntrySlice(set, get, api),
         ...createTimekeepingDeviceSlice(set, get, api),
+        ...createRecruitmentSlice(set, get),
       }),
       {
         name: 'employee-management-storage',
@@ -67,6 +70,9 @@ export const useAppStore = create<StoreState>()(
           timeEntries: state.timeEntries,
           timekeepingDevices: state.timekeepingDevices,
           rawTimeData: state.rawTimeData,
+          jobPostings: state.jobPostings,
+          jobApplications: state.jobApplications,
+          interviews: state.interviews,
         }),
       }
     )

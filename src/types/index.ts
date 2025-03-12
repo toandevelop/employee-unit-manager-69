@@ -1,4 +1,3 @@
-
 export interface Employee {
   id: string;
   code: string;
@@ -211,4 +210,53 @@ export interface TimekeepingDevice {
   location: string;
   status: 'active' | 'inactive' | 'maintenance';
   lastSyncDate?: string;
+}
+
+export interface JobPosting {
+  id: string;
+  title: string;
+  departmentId: string;
+  positionId: string;
+  description: string;
+  requirements: string;
+  salary: string;
+  status: 'open' | 'closed' | 'draft';
+  openDate: string;
+  closeDate: string;
+  createdAt: string;
+  updatedAt: string;
+  department?: Department;
+  position?: Position;
+  applications?: JobApplication[];
+}
+
+export interface JobApplication {
+  id: string;
+  jobPostingId: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  resumeUrl?: string;
+  coverLetter?: string;
+  status: 'new' | 'reviewing' | 'interview' | 'offered' | 'hired' | 'rejected';
+  applicationDate: string;
+  notes?: string;
+  jobPosting?: JobPosting;
+  interviews?: Interview[];
+}
+
+export interface Interview {
+  id: string;
+  applicationId: string;
+  interviewDate: string;
+  interviewTime: string;
+  interviewType: 'phone' | 'online' | 'in-person';
+  interviewers: string[];
+  location?: string;
+  meetingLink?: string;
+  notes?: string;
+  status: 'scheduled' | 'completed' | 'canceled';
+  feedback?: string;
+  rating?: number;
+  application?: JobApplication;
 }
