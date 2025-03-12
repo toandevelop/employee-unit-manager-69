@@ -53,7 +53,7 @@ export interface WorkShiftSlice {
 }
 
 export const createWorkShiftSlice: StateCreator<WorkShiftSlice, [], [], WorkShiftSlice> = 
-  (set) => ({
+  (set, get, api) => ({
     workShifts: initialWorkShifts,
     
     addWorkShift: (workShift) => {

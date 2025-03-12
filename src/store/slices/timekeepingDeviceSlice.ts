@@ -1,9 +1,8 @@
-
 import { StateCreator } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { TimekeepingDevice, RawTimeData } from '@/types';
 
-// Sample data
+// Sample data for timekeeping devices and raw time data
 const initialTimekeepingDevices: TimekeepingDevice[] = [
   {
     id: "device-001",
@@ -101,7 +100,7 @@ export interface TimekeepingDeviceSlice {
 }
 
 export const createTimekeepingDeviceSlice: StateCreator<TimekeepingDeviceSlice, [], [], TimekeepingDeviceSlice> = 
-  (set) => ({
+  (set, get, api) => ({
     timekeepingDevices: initialTimekeepingDevices,
     rawTimeData: initialRawTimeData,
     

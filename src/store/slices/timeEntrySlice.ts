@@ -98,7 +98,7 @@ export interface TimeEntrySlice {
 }
 
 export const createTimeEntrySlice: StateCreator<TimeEntrySlice, [], [], TimeEntrySlice> = 
-  (set) => ({
+  (set, get, api) => ({
     timeEntries: initialTimeEntries,
     
     addTimeEntry: (timeEntry) => {
