@@ -45,45 +45,36 @@ const formSchema = z.object({
 export interface WorkShiftDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  workShift?: WorkShift;
+  onSubmit: (data: any) => void;
+  defaultValues?: WorkShift;
+  mode?: 'add' | 'edit';
 }
 
-export function WorkShiftDialog({ isOpen, onOpenChange, workShift }: WorkShiftDialogProps) {
+export function WorkShiftDialog({ 
+  isOpen, 
+  onOpenChange, 
+  defaultValues, 
+  onSubmit, 
+  mode = 'add' 
+}: WorkShiftDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addWorkShift, updateWorkShift } = useAppStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      code: workShift?.code || "",
-      name: workShift?.name || "",
-      startTime: workShift?.startTime || "08:00",
-      endTime: workShift?.endTime || "17:00",
-      description: workShift?.description || "",
+      code: defaultValues?.code || "",
+      name: defaultValues?.name || "",
+      startTime: defaultValues?.startTime || "08:00",
+      endTime: defaultValues?.endTime || "17:00",
+      description: defaultValues?.description || "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
     try {
-      const workShiftData = {
-        code: values.code,
-        name: values.name,
-        startTime: values.startTime,
-        endTime: values.endTime,
-        description: values.description,
-      };
-      
-      if (workShift) {
-        updateWorkShift(workShift.id, workShiftData);
-        toast.success("Cập nhật ca làm việc thành công!");
-      } else {
-        addWorkShift(workShiftData);
-        toast.success("Thêm ca làm việc thành công!");
-      }
-      
-      onOpenChange(false);
+      onSubmit(values);
       form.reset();
     } catch (error) {
       console.error(error);
@@ -98,14 +89,14 @@ export function WorkShiftDialog({ isOpen, onOpenChange, workShift }: WorkShiftDi
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {workShift ? "Cập nhật ca làm việc" : "Thêm ca làm việc"}
+            {mode === 'edit' ? "Cập nhật ca làm việc" : "Thêm ca làm việc"}
           </DialogTitle>
           <DialogDescription>
-            Vui lòng điền đầy đủ thông tin để {workShift ? "cập nhật" : "thêm"} ca làm việc.
+            Vui lòng điền đầy đủ thông tin để {mode === 'edit' ? "cập nhật" : "thêm"} ca làm việc.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="code"
@@ -175,7 +166,7 @@ export function WorkShiftDialog({ isOpen, onOpenChange, workShift }: WorkShiftDi
             />
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
-                {workShift ? "Cập nhật" : "Thêm"}
+                {mode === 'edit' ? "Cập nhật" : "Thêm"}
               </Button>
             </DialogFooter>
           </form>

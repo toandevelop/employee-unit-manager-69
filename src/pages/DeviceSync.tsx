@@ -1,7 +1,7 @@
 
 import { motion } from 'framer-motion';
 import { DeviceSyncDashboard } from '@/components/timekeeping/DeviceSyncDashboard';
-import RawDataTable from '@/components/timekeeping/RawDataTable';
+import { RawDataTable } from '@/components/timekeeping/RawDataTable';
 import { useAppStore } from '@/store';
 
 const DeviceSyncPage = () => {

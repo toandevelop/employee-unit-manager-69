@@ -25,9 +25,7 @@ export const WorkShiftDashboard = ({}: WorkShiftDashboardProps) => {
   };
   
   const handleDelete = (id: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa ca làm việc này?')) {
-      deleteWorkShift(id);
-    }
+    deleteWorkShift(id);
   };
   
   // Get selected shift for editing

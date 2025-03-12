@@ -125,3 +125,5 @@ export function RawDataTable() {
     </div>
   );
 }
+
+export default RawDataTable;

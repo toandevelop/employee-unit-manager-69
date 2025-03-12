@@ -23,14 +23,16 @@ import { useState } from 'react';
 
 interface WorkShiftTableProps {
   workShifts: WorkShift[];
-  onEditClick: (shift: WorkShift) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 const WorkShiftTable: React.FC<WorkShiftTableProps> = ({ 
   workShifts, 
-  onEditClick 
+  onEdit,
+  onDelete
 }) => {
-  const { deleteWorkShift, timeEntries } = useAppStore();
+  const { timeEntries } = useAppStore();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
   const handleDelete = (id: string) => {
@@ -42,7 +44,7 @@ const WorkShiftTable: React.FC<WorkShiftTableProps> = ({
       return;
     }
     
-    deleteWorkShift(id);
+    onDelete(id);
     toast.success('Xóa ca làm việc thành công');
   };
   
@@ -101,7 +103,7 @@ const WorkShiftTable: React.FC<WorkShiftTableProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => onEditClick(shift)}
+                      onClick={() => onEdit(shift.id)}
                     >
                       <Pencil className="h-4 w-4" />
                       <span className="sr-only">Sửa</span>

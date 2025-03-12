@@ -7,8 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, RefreshCw, Server } from "lucide-react";
 import { toast } from "sonner";
 
-export function DeviceSyncDashboard() {
-  const { timekeepingDevices, syncDeviceData } = useAppStore();
+export interface DeviceSyncDashboardProps {
+  onSync: (deviceId: string) => void;
+}
+
+export function DeviceSyncDashboard({ onSync }: DeviceSyncDashboardProps) {
+  const { timekeepingDevices } = useAppStore();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -16,7 +20,7 @@ export function DeviceSyncDashboard() {
     if (selectedDeviceId) {
       setIsSyncing(true);
       try {
-        syncDeviceData(selectedDeviceId);
+        onSync(selectedDeviceId);
         toast.success("Đồng bộ dữ liệu thành công!");
       } catch (error) {
         toast.error("Đồng bộ dữ liệu thất bại!");

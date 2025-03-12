@@ -2,12 +2,15 @@
 import { useAppStore } from "@/store";
 import { Card, CardContent } from "../ui/card";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { WorkShift } from "@/types";
 
-export function WorkShiftBar() {
-  const { workShifts } = useAppStore();
-  
+interface WorkShiftBarProps {
+  shifts: WorkShift[];
+}
+
+export function WorkShiftBar({ shifts }: WorkShiftBarProps) {
   // Transform data for chart
-  const chartData = workShifts.map(shift => {
+  const chartData = shifts.map(shift => {
     const startHour = parseInt(shift.startTime.split(':')[0]);
     const endHour = parseInt(shift.endTime.split(':')[0]);
     const duration = endHour - startHour;
