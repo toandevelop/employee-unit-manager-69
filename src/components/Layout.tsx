@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +16,9 @@ import {
   GraduationCap, 
   BookOpen,
   Clock,
-  CalendarClock
+  CalendarClock,
+  Timer,
+  MonitorSmartphone
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -63,6 +64,7 @@ const Layout = ({ children }: LayoutProps) => {
     { path: '/work-reports', label: 'Báo cáo công việc', icon: <FileText className="h-5 w-5" /> },
     { path: '/leaves', label: 'Quản lý nghỉ phép', icon: <CalendarClock className="h-5 w-5" /> },
     { path: '/overtimes', label: 'Quản lý tăng ca', icon: <Clock className="h-5 w-5" /> },
+    { path: '/timekeeping', label: 'Quản lý chấm công', icon: <Timer className="h-5 w-5" /> },
   ];
   
   const categories: NavigationCategory[] = [
@@ -77,6 +79,8 @@ const Layout = ({ children }: LayoutProps) => {
         { path: '/academic-titles', label: 'Quản lý học hàm', icon: <BookOpen className="h-5 w-5" /> },
         { path: '/leave-types', label: 'Loại nghỉ phép', icon: <CalendarClock className="h-5 w-5" /> },
         { path: '/overtime-types', label: 'Loại tăng ca', icon: <Clock className="h-5 w-5" /> },
+        { path: '/work-shifts', label: 'Ca làm việc', icon: <Clock className="h-5 w-5" /> },
+        { path: '/device-sync', label: 'Thiết bị chấm công', icon: <MonitorSmartphone className="h-5 w-5" /> },
       ]
     }
   ];

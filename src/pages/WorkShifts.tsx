@@ -11,6 +11,11 @@ const WorkShiftsPage = () => {
       transition={{ duration: 0.2 }}
       className="space-y-6"
     >
+      <div>
+        <h1 className="text-3xl font-bold">Quản lý ca làm việc</h1>
+        <p className="text-muted-foreground mt-1">Thiết lập và quản lý ca làm việc</p>
+      </div>
+      
       <WorkShiftDashboard />
     </motion.div>
   );
