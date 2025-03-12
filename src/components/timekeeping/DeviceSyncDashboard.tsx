@@ -1,16 +1,14 @@
+
 import React, { useState } from "react";
 import { useAppStore } from "@/store";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, RefreshCw, Server } from "lucide-react";
+import { toast } from "sonner";
 
-interface DeviceSyncDashboardProps {
-  onSync: (deviceId: string) => Promise<void>;
-}
-
-export function DeviceSyncDashboard({ onSync }: DeviceSyncDashboardProps) {
-  const { timekeepingDevices } = useAppStore();
+export function DeviceSyncDashboard() {
+  const { timekeepingDevices, syncDeviceData } = useAppStore();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -18,10 +16,10 @@ export function DeviceSyncDashboard({ onSync }: DeviceSyncDashboardProps) {
     if (selectedDeviceId) {
       setIsSyncing(true);
       try {
-        await onSync(selectedDeviceId);
-        // Optionally, show a success message
+        syncDeviceData(selectedDeviceId);
+        toast.success("Đồng bộ dữ liệu thành công!");
       } catch (error) {
-        // Optionally, show an error message
+        toast.error("Đồng bộ dữ liệu thất bại!");
         console.error("Sync failed", error);
       } finally {
         setIsSyncing(false);

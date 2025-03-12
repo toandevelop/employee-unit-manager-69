@@ -1,18 +1,16 @@
 
-import React from "react";
-import { z } from "zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useAppStore } from "@/store";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -22,88 +20,90 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { WorkShift } from "@/types";
 
-// Define the form schema
 const formSchema = z.object({
-  code: z.string().min(1, "Mã ca làm việc không được để trống"),
-  name: z.string().min(1, "Tên ca làm việc không được để trống"),
-  startTime: z.string().min(1, "Thời gian bắt đầu không được để trống"),
-  endTime: z.string().min(1, "Thời gian kết thúc không được để trống"),
+  code: z.string().min(2, {
+    message: "Mã ca làm việc phải có ít nhất 2 ký tự.",
+  }),
+  name: z.string().min(3, {
+    message: "Tên ca làm việc phải có ít nhất 3 ký tự.",
+  }),
+  startTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+    message: "Thời gian không hợp lệ. Sử dụng định dạng HH:MM",
+  }),
+  endTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+    message: "Thời gian không hợp lệ. Sử dụng định dạng HH:MM",
+  }),
   description: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
-
-interface WorkShiftDialogProps {
+export interface WorkShiftDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  workShiftId?: string;
-  onSuccess?: () => void;
+  workShift?: WorkShift;
 }
 
-export function WorkShiftDialog({
-  isOpen,
-  onOpenChange,
-  workShiftId,
-  onSuccess,
-}: WorkShiftDialogProps) {
-  const { workShifts, addWorkShift, updateWorkShift } = useAppStore();
+export function WorkShiftDialog({ isOpen, onOpenChange, workShift }: WorkShiftDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addWorkShift, updateWorkShift } = useAppStore();
 
-  // Find the work shift if editing
-  const workShift = workShiftId
-    ? workShifts.find((ws) => ws.id === workShiftId)
-    : undefined;
-
-  // Set up form with default values
-  const form = useForm<FormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: workShift
-      ? {
-          code: workShift.code,
-          name: workShift.name,
-          startTime: workShift.startTime,
-          endTime: workShift.endTime,
-          description: workShift.description || "",
-        }
-      : {
-          code: "",
-          name: "",
-          startTime: "08:00",
-          endTime: "17:00",
-          description: "",
-        },
+    defaultValues: {
+      code: workShift?.code || "",
+      name: workShift?.name || "",
+      startTime: workShift?.startTime || "08:00",
+      endTime: workShift?.endTime || "17:00",
+      description: workShift?.description || "",
+    },
   });
 
-  // Handle form submission
-  const onSubmit = (data: FormValues) => {
-    if (workShiftId) {
-      // Update existing work shift
-      updateWorkShift(workShiftId, data);
-    } else {
-      // Create new work shift with required fields
-      addWorkShift({
-        code: data.code,
-        name: data.name,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        description: data.description || '',
-      });
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
+    
+    try {
+      const workShiftData = {
+        code: values.code,
+        name: values.name,
+        startTime: values.startTime,
+        endTime: values.endTime,
+        description: values.description,
+      };
+      
+      if (workShift) {
+        updateWorkShift(workShift.id, workShiftData);
+        toast.success("Cập nhật ca làm việc thành công!");
+      } else {
+        addWorkShift(workShiftData);
+        toast.success("Thêm ca làm việc thành công!");
+      }
+      
+      onOpenChange(false);
+      form.reset();
+    } catch (error) {
+      console.error(error);
+      toast.error("Có lỗi xảy ra!");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Close dialog and trigger success callback
-    onOpenChange(false);
-    if (onSuccess) onSuccess();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {workShiftId ? "Cập nhật ca làm việc" : "Thêm ca làm việc mới"}
+            {workShift ? "Cập nhật ca làm việc" : "Thêm ca làm việc"}
           </DialogTitle>
+          <DialogDescription>
+            Vui lòng điền đầy đủ thông tin để {workShift ? "cập nhật" : "thêm"} ca làm việc.
+          </DialogDescription>
         </DialogHeader>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -113,13 +113,12 @@ export function WorkShiftDialog({
                 <FormItem>
                   <FormLabel>Mã ca làm việc</FormLabel>
                   <FormControl>
-                    <Input placeholder="VD: CA-SANG" {...field} />
+                    <Input placeholder="Ví dụ: CA-SANG" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="name"
@@ -127,13 +126,12 @@ export function WorkShiftDialog({
                 <FormItem>
                   <FormLabel>Tên ca làm việc</FormLabel>
                   <FormControl>
-                    <Input placeholder="VD: Ca sáng" {...field} />
+                    <Input placeholder="Ví dụ: Ca sáng" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -142,13 +140,12 @@ export function WorkShiftDialog({
                   <FormItem>
                     <FormLabel>Thời gian bắt đầu</FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <Input placeholder="08:00" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="endTime"
@@ -156,35 +153,29 @@ export function WorkShiftDialog({
                   <FormItem>
                     <FormLabel>Thời gian kết thúc</FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <Input placeholder="17:00" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mô tả (tùy chọn)</FormLabel>
+                  <FormLabel>Mô tả</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Mô tả về ca làm việc"
-                      className="resize-none"
-                      {...field}
-                    />
+                    <Textarea placeholder="Mô tả ca làm việc" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <DialogFooter>
-              <Button type="submit">
-                {workShiftId ? "Cập nhật" : "Thêm mới"}
+              <Button type="submit" disabled={isSubmitting}>
+                {workShift ? "Cập nhật" : "Thêm"}
               </Button>
             </DialogFooter>
           </form>

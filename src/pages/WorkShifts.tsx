@@ -1,6 +1,6 @@
 
 import { motion } from 'framer-motion';
-import WorkShiftDashboard from '@/components/timekeeping/WorkShiftDashboard';
+import { WorkShiftDashboard } from '@/components/timekeeping/WorkShiftDashboard';
 
 const WorkShiftsPage = () => {
   return (
