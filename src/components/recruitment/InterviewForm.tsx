@@ -1,5 +1,7 @@
 
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useAppStore } from '@/store';
 import { Interview } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -26,11 +28,29 @@ interface InterviewFormProps {
   onSuccess: () => void;
 }
 
+// Define the interview form schema
+const interviewFormSchema = z.object({
+  applicationId: z.string(),
+  interviewDate: z.date(),
+  interviewTime: z.string(),
+  interviewType: z.enum(['phone', 'online', 'in-person']),
+  interviewersInput: z.string(),
+  location: z.string().optional(),
+  meetingLink: z.string().optional(),
+  notes: z.string().optional(),
+  status: z.enum(['scheduled', 'completed', 'canceled']),
+  feedback: z.string().optional(),
+  rating: z.number().optional(),
+});
+
+// Infer the types from the schema
+type InterviewFormValues = z.infer<typeof interviewFormSchema>;
+
 const InterviewForm = ({ applicationId, interview, onSuccess }: InterviewFormProps) => {
   const addInterview = useAppStore((state) => state.addInterview);
   const updateInterview = useAppStore((state) => state.updateInterview);
   
-  const defaultValues = interview
+  const defaultValues: InterviewFormValues = interview
     ? {
         ...interview,
         interviewDate: new Date(interview.interviewDate),
@@ -40,23 +60,24 @@ const InterviewForm = ({ applicationId, interview, onSuccess }: InterviewFormPro
         applicationId,
         interviewDate: new Date(),
         interviewTime: '09:00',
-        interviewType: 'in-person',
+        interviewType: 'in-person' as const,
         interviewersInput: '',
         location: '',
         meetingLink: '',
         notes: '',
-        status: 'scheduled',
+        status: 'scheduled' as const,
         feedback: '',
         rating: undefined,
       };
   
-  const form = useForm({
+  const form = useForm<InterviewFormValues>({
+    resolver: zodResolver(interviewFormSchema),
     defaultValues,
   });
   
   const watchInterviewType = form.watch('interviewType');
   
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: InterviewFormValues) => {
     // Convert the comma-separated interviewers string to an array
     const interviewers = data.interviewersInput
       .split(',')
@@ -144,7 +165,7 @@ const InterviewForm = ({ applicationId, interview, onSuccess }: InterviewFormPro
               <FormLabel>Hình thức phỏng vấn</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
-                defaultValue={field.value}
+                value={field.value || undefined}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -230,7 +251,7 @@ const InterviewForm = ({ applicationId, interview, onSuccess }: InterviewFormPro
               <FormLabel>Trạng thái</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
-                defaultValue={field.value}
+                value={field.value || undefined}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -272,7 +293,7 @@ const InterviewForm = ({ applicationId, interview, onSuccess }: InterviewFormPro
                   <FormLabel>Đánh giá (số sao)</FormLabel>
                   <Select 
                     onValueChange={(value) => field.onChange(Number(value))} 
-                    defaultValue={field.value?.toString()}
+                    value={field.value?.toString() || undefined}
                   >
                     <FormControl>
                       <SelectTrigger>
