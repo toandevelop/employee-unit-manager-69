@@ -1,201 +1,135 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Briefcase, 
-  Calendar, 
-  Building2, 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2,
-  Search
-} from 'lucide-react';
 import { useAppStore } from '@/store';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import JobPostingForm from './JobPostingForm';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 
-export const JobPostingsList = () => {
-  const { jobPostings, departments, positions, jobApplications, deleteJobPosting } = useAppStore();
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+const JobPostingsList = () => {
+  const jobPostings = useAppStore((state) => state.jobPostings);
+  const deleteJobPosting = useAppStore((state) => state.deleteJobPosting);
+  
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentJobPosting, setCurrentJobPosting] = useState<string | null>(null);
-
-  // Filter job postings based on search term
-  const filteredJobPostings = jobPostings.filter(posting => 
-    posting.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    posting.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getStatusClassName = (status: string) => {
+  const [editingJobPosting, setEditingJobPosting] = useState<string | null>(null);
+  
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'open':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-green-500';
       case 'closed':
-        return 'bg-red-100 text-red-800 border-red-300';
-      case 'draft':
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-red-500';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-yellow-500';
     }
   };
-
-  const getDepartmentName = (departmentId: string) => {
-    const department = departments.find(d => d.id === departmentId);
-    return department ? department.name : 'N/A';
-  };
-
-  const getPositionName = (positionId: string) => {
-    const position = positions.find(p => p.id === positionId);
-    return position ? position.name : 'N/A';
-  };
-
-  const getApplicationCount = (jobPostingId: string) => {
-    return jobApplications.filter(app => app.jobPostingId === jobPostingId).length;
-  };
-
-  const handleViewDetails = (id: string) => {
-    navigate(`/recruitment/job/${id}`);
-  };
-
-  const handleEditJobPosting = (id: string) => {
-    setCurrentJobPosting(id);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleDeleteJobPosting = (id: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa vị trí tuyển dụng này không?')) {
-      deleteJobPosting(id);
-    }
-  };
-
+  
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div className="relative w-full sm:w-96">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Tìm kiếm vị trí tuyển dụng..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        
+      <div className="flex justify-between">
+        <h2 className="text-xl font-semibold">Danh sách vị trí tuyển dụng</h2>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              Thêm vị trí mới
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Thêm vị trí mới
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Thêm vị trí tuyển dụng mới</DialogTitle>
             </DialogHeader>
-            <JobPostingForm 
-              onSuccess={() => setIsAddDialogOpen(false)} 
-            />
+            <JobPostingForm onSuccess={() => setIsAddDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>
-
-      {filteredJobPostings.length === 0 ? (
-        <div className="text-center py-10">
-          <h3 className="text-lg font-medium">Không có vị trí tuyển dụng nào</h3>
-          <p className="text-muted-foreground mt-1">Thêm vị trí tuyển dụng mới để bắt đầu.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredJobPostings.map((posting) => (
-            <Card key={posting.id} className="overflow-hidden">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <Badge className={getStatusClassName(posting.status)}>
-                      {posting.status === 'open' ? 'Đang mở' : 
-                       posting.status === 'closed' ? 'Đã đóng' : 
-                       'Bản nháp'}
-                    </Badge>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleEditJobPosting(posting.id)}
-                    >
-                      <Edit className="h-4 w-4" />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {jobPostings.map((jobPosting) => (
+          <Card key={jobPosting.id} className="overflow-hidden">
+            <div className={`${getStatusColor(jobPosting.status)} h-2 w-full`}></div>
+            <CardContent className="p-4 pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-lg">{jobPosting.title}</h3>
+                  <Badge variant="outline" className="mt-1">
+                    {jobPosting.status === 'open' ? 'Đang tuyển' : jobPosting.status === 'closed' ? 'Đã đóng' : 'Bản nháp'}
+                  </Badge>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <span className="sr-only">Mở menu</span>
+                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                        <path d="M3.625 7.5C3.625 8.12132 3.12132 8.625 2.5 8.625C1.87868 8.625 1.375 8.12132 1.375 7.5C1.375 6.87868 1.87868 6.375 2.5 6.375C3.12132 6.375 3.625 6.87868 3.625 7.5ZM8.625 7.5C8.625 8.12132 8.12132 8.625 7.5 8.625C6.87868 8.625 6.375 8.12132 6.375 7.5C6.375 6.87868 6.87868 6.375 7.5 6.375C8.12132 6.375 8.625 6.87868 8.625 7.5ZM13.625 7.5C13.625 8.12132 13.1213 8.625 12.5 8.625C11.8787 8.625 11.375 8.12132 11.375 7.5C11.375 6.87868 11.8787 6.375 12.5 6.375C13.1213 6.375 13.625 6.87868 13.625 7.5Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                      </svg>
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleDeleteJobPosting(posting.id)}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <Dialog open={editingJobPosting === jobPosting.id} onOpenChange={(open) => {
+                      if (!open) setEditingJobPosting(null);
+                    }}>
+                      <DialogTrigger asChild>
+                        <DropdownMenuItem onSelect={() => setEditingJobPosting(jobPosting.id)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Chỉnh sửa</span>
+                        </DropdownMenuItem>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[600px]">
+                        <DialogHeader>
+                          <DialogTitle>Chỉnh sửa vị trí tuyển dụng</DialogTitle>
+                        </DialogHeader>
+                        <JobPostingForm 
+                          jobPosting={jobPosting} 
+                          onSuccess={() => setEditingJobPosting(null)} 
+                        />
+                      </DialogContent>
+                    </Dialog>
+                    <DropdownMenuItem 
+                      onSelect={() => deleteJobPosting(jobPosting.id)}
+                      className="text-red-600"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Xóa</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              
+              <div className="mt-4 space-y-2 text-sm">
+                <div>
+                  <span className="font-medium">Thời hạn nộp hồ sơ: </span>
+                  <span>{new Date(jobPosting.closeDate).toLocaleDateString('vi-VN')}</span>
                 </div>
-                <CardTitle className="text-xl mt-2">{posting.title}</CardTitle>
-                <CardDescription className="mt-1">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Building2 className="h-3.5 w-3.5 mr-1" />
-                    {getDepartmentName(posting.departmentId)}
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground mt-1">
-                    <Briefcase className="h-3.5 w-3.5 mr-1" />
-                    {getPositionName(posting.positionId)}
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pb-3">
-                <p className="text-sm text-muted-foreground line-clamp-3">{posting.description}</p>
-                <div className="mt-3 flex items-center">
-                  <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(posting.openDate).toLocaleDateString()} - {new Date(posting.closeDate).toLocaleDateString()}
-                  </span>
+                <div>
+                  <span className="font-medium">Mức lương: </span>
+                  <span>{jobPosting.salary}</span>
                 </div>
-                <div className="mt-2 flex items-center">
-                  <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {getApplicationCount(posting.id)} ứng viên
-                  </span>
-                </div>
-              </CardContent>
-              <CardFooter className="pt-1">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => handleViewDetails(posting.id)}
-                >
-                  Xem chi tiết
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Edit Job Posting Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Chỉnh sửa vị trí tuyển dụng</DialogTitle>
-          </DialogHeader>
-          {currentJobPosting && (
-            <JobPostingForm 
-              jobPostingId={currentJobPosting} 
-              onSuccess={() => setIsEditDialogOpen(false)} 
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+                <p className="line-clamp-2 text-gray-500 mt-2">{jobPosting.description}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        
+        {jobPostings.length === 0 && (
+          <div className="col-span-full text-center py-12 text-gray-500">
+            Chưa có vị trí tuyển dụng nào. Hãy tạo vị trí tuyển dụng mới.
+          </div>
+        )}
+      </div>
     </div>
   );
 };

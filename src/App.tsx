@@ -27,6 +27,7 @@ import OvertimeTypesPage from "./pages/OvertimeTypes";
 import TimekeepingPage from "./pages/Timekeeping";
 import WorkShiftsPage from "./pages/WorkShifts";
 import DeviceSyncPage from "./pages/DeviceSync";
+import RecruitmentPage from "./pages/Recruitment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/timekeeping" element={<TimekeepingPage />} />
               <Route path="/work-shifts" element={<WorkShiftsPage />} />
               <Route path="/device-sync" element={<DeviceSyncPage />} />
+              <Route path="/recruitment" element={<RecruitmentPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>

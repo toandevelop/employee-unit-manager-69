@@ -18,7 +18,8 @@ import {
   Clock,
   CalendarClock,
   Timer,
-  MonitorSmartphone
+  MonitorSmartphone,
+  UserSearch
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -65,6 +66,7 @@ const Layout = ({ children }: LayoutProps) => {
     { path: '/leaves', label: 'Quản lý nghỉ phép', icon: <CalendarClock className="h-5 w-5" /> },
     { path: '/overtimes', label: 'Quản lý tăng ca', icon: <Clock className="h-5 w-5" /> },
     { path: '/timekeeping', label: 'Quản lý chấm công', icon: <Timer className="h-5 w-5" /> },
+    { path: '/recruitment', label: 'Quản lý tuyển dụng', icon: <UserSearch className="h-5 w-5" /> },
   ];
   
   const categories: NavigationCategory[] = [

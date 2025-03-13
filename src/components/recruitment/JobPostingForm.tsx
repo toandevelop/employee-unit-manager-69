@@ -1,112 +1,78 @@
 
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useAppStore } from '@/store';
 import { JobPosting } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon } from 'lucide-react';
-
-// Form schema validation
-const formSchema = z.object({
-  title: z.string().min(1, { message: 'Vui lòng nhập tiêu đề vị trí' }),
-  departmentId: z.string().min(1, { message: 'Vui lòng chọn phòng ban' }),
-  positionId: z.string().min(1, { message: 'Vui lòng chọn chức vụ' }),
-  description: z.string().min(1, { message: 'Vui lòng nhập mô tả công việc' }),
-  requirements: z.string().min(1, { message: 'Vui lòng nhập yêu cầu công việc' }),
-  salary: z.string().min(1, { message: 'Vui lòng nhập mức lương' }),
-  status: z.enum(['open', 'closed', 'draft']),
-  openDate: z.date({ required_error: 'Vui lòng chọn ngày mở đơn' }),
-  closeDate: z.date({ required_error: 'Vui lòng chọn ngày đóng đơn' }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 interface JobPostingFormProps {
-  jobPostingId?: string;
+  jobPosting?: JobPosting;
   onSuccess: () => void;
 }
 
-const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
-  const { departments, positions, jobPostings, addJobPosting, updateJobPosting } = useAppStore();
+const JobPostingForm = ({ jobPosting, onSuccess }: JobPostingFormProps) => {
+  const departments = useAppStore((state) => state.departments);
+  const positions = useAppStore((state) => state.positions);
+  const addJobPosting = useAppStore((state) => state.addJobPosting);
+  const updateJobPosting = useAppStore((state) => state.updateJobPosting);
   
-  // Get the job posting if we're editing
-  const jobPosting = jobPostingId 
-    ? jobPostings.find(jp => jp.id === jobPostingId) 
-    : null;
-  
-  // Initialize form
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: '',
-      departmentId: '',
-      positionId: '',
-      description: '',
-      requirements: '',
-      salary: '',
-      status: 'draft' as const,
-      openDate: new Date(),
-      closeDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default to 30 days from now
-    }
-  });
-  
-  // Set form values if editing an existing job posting
-  useEffect(() => {
-    if (jobPosting) {
-      form.reset({
-        title: jobPosting.title,
-        departmentId: jobPosting.departmentId,
-        positionId: jobPosting.positionId,
-        description: jobPosting.description,
-        requirements: jobPosting.requirements,
-        salary: jobPosting.salary,
-        status: jobPosting.status as 'open' | 'closed' | 'draft',
+  const defaultValues = jobPosting
+    ? {
+        ...jobPosting,
         openDate: new Date(jobPosting.openDate),
         closeDate: new Date(jobPosting.closeDate),
+      }
+    : {
+        title: '',
+        departmentId: '',
+        positionId: '',
+        description: '',
+        requirements: '',
+        salary: '',
+        status: 'open',
+        openDate: new Date(),
+        closeDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      };
+  
+  const form = useForm({
+    defaultValues,
+  });
+  
+  const onSubmit = (data: any) => {
+    if (jobPosting) {
+      updateJobPosting(jobPosting.id, {
+        ...data,
+        openDate: data.openDate.toISOString().split('T')[0],
+        closeDate: data.closeDate.toISOString().split('T')[0],
+      });
+    } else {
+      addJobPosting({
+        ...data,
+        openDate: data.openDate.toISOString().split('T')[0],
+        closeDate: data.closeDate.toISOString().split('T')[0],
       });
     }
-  }, [jobPosting, form]);
-  
-  // Form submission handler
-  const onSubmit = (values: FormValues) => {
-    // Convert dates to ISO strings for storage
-    const formattedValues = {
-      ...values,
-      openDate: values.openDate.toISOString().split('T')[0],
-      closeDate: values.closeDate.toISOString().split('T')[0],
-    };
-    
-    if (jobPostingId) {
-      // Update existing job posting
-      updateJobPosting(jobPostingId, formattedValues);
-    } else {
-      // Add new job posting
-      addJobPosting(formattedValues);
-    }
-    
     onSuccess();
   };
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="title"
@@ -128,16 +94,19 @@ const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Phòng ban</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Chọn phòng ban" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {departments.map((department) => (
-                      <SelectItem key={department.id} value={department.id}>
-                        {department.name}
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        {dept.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -153,16 +122,19 @@ const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Chức vụ</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Chọn chức vụ" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {positions.map((position) => (
-                      <SelectItem key={position.id} value={position.id}>
-                        {position.name}
+                    {positions.map((pos) => (
+                      <SelectItem key={pos.id} value={pos.id}>
+                        {pos.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -181,7 +153,7 @@ const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
               <FormLabel>Mô tả công việc</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Nhập mô tả chi tiết về công việc" 
+                  placeholder="Mô tả chi tiết về công việc..." 
                   className="min-h-[100px]" 
                   {...field} 
                 />
@@ -196,10 +168,10 @@ const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
           name="requirements"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Yêu cầu công việc</FormLabel>
+              <FormLabel>Yêu cầu ứng viên</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Nhập các yêu cầu đối với ứng viên" 
+                  placeholder="Yêu cầu về kỹ năng, kinh nghiệm..." 
                   className="min-h-[100px]" 
                   {...field} 
                 />
@@ -209,44 +181,19 @@ const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
           )}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="salary"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mức lương</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ví dụ: 15-20 triệu VNĐ" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Trạng thái</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn trạng thái" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="draft">Bản nháp</SelectItem>
-                    <SelectItem value="open">Đang mở</SelectItem>
-                    <SelectItem value="closed">Đã đóng</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="salary"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Mức lương</FormLabel>
+              <FormControl>
+                <Input placeholder="VD: 15-20 triệu VNĐ" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
@@ -254,19 +201,16 @@ const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
             name="openDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Ngày mở đơn</FormLabel>
+                <FormLabel>Ngày bắt đầu</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
-                        className={cn(
-                          "pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
+                        className="pl-3 text-left font-normal"
                       >
                         {field.value ? (
-                          format(field.value, "dd/MM/yyyy")
+                          format(field.value, 'dd/MM/yyyy', { locale: vi })
                         ) : (
                           <span>Chọn ngày</span>
                         )}
@@ -293,19 +237,16 @@ const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
             name="closeDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Ngày đóng đơn</FormLabel>
+                <FormLabel>Ngày kết thúc</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
-                        className={cn(
-                          "pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
+                        className="pl-3 text-left font-normal"
                       >
                         {field.value ? (
-                          format(field.value, "dd/MM/yyyy")
+                          format(field.value, 'dd/MM/yyyy', { locale: vi })
                         ) : (
                           <span>Chọn ngày</span>
                         )}
@@ -328,13 +269,35 @@ const JobPostingForm = ({ jobPostingId, onSuccess }: JobPostingFormProps) => {
           />
         </div>
         
-        <div className="flex justify-end space-x-2 mt-6">
-          <Button type="button" variant="outline" onClick={onSuccess}>
-            Hủy
-          </Button>
-          <Button type="submit">
-            {jobPostingId ? 'Cập nhật' : 'Tạo vị trí'}
-          </Button>
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Trạng thái</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn trạng thái" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="open">Đang mở</SelectItem>
+                  <SelectItem value="closed">Đã đóng</SelectItem>
+                  <SelectItem value="draft">Bản nháp</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onSuccess}>Hủy</Button>
+          <Button type="submit">{jobPosting ? 'Cập nhật' : 'Tạo mới'}</Button>
         </div>
       </form>
     </Form>

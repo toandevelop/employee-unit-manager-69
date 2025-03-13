@@ -1,74 +1,41 @@
 
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useAppStore } from '@/store';
 import { Button } from '@/components/ui/button';
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-
-// Form schema validation
-const formSchema = z.object({
-  jobPostingId: z.string().min(1, { message: 'Vui lòng chọn vị trí tuyển dụng' }),
-  fullName: z.string().min(1, { message: 'Vui lòng nhập họ tên' }),
-  email: z.string().email({ message: 'Email không hợp lệ' }),
-  phone: z.string().min(1, { message: 'Vui lòng nhập số điện thoại' }),
-  resumeUrl: z.string().optional(),
-  coverLetter: z.string().optional(),
-  status: z.enum(['new', 'reviewing', 'interview', 'offered', 'hired', 'rejected']),
-  notes: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ApplicationFormProps {
-  applicationId?: string;
-  preselectedJobPostingId?: string;
   onSuccess: () => void;
 }
 
-const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: ApplicationFormProps) => {
-  const { jobPostings, jobApplications, addJobApplication, updateJobApplication } = useAppStore();
+const ApplicationForm = ({ onSuccess }: ApplicationFormProps) => {
+  const jobPostings = useAppStore((state) => state.jobPostings.filter(jp => jp.status === 'open'));
+  const addJobApplication = useAppStore((state) => state.addJobApplication);
   
-  // Get the application if we're editing
-  const application = applicationId 
-    ? jobApplications.find(app => app.id === applicationId) 
-    : null;
-  
-  // Initialize form
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm({
     defaultValues: {
-      jobPostingId: preselectedJobPostingId || '',
-      fullName: application?.fullName || '',
-      email: application?.email || '',
-      phone: application?.phone || '',
-      resumeUrl: application?.resumeUrl || '',
-      coverLetter: application?.coverLetter || '',
-      status: application?.status || 'new',
-      notes: application?.notes || '',
-    }
+      jobPostingId: '',
+      fullName: '',
+      email: '',
+      phone: '',
+      resumeUrl: '',
+      coverLetter: '',
+      status: 'new',
+    },
   });
   
-  // Form submission handler
-  const onSubmit = (values: FormValues) => {
-    if (applicationId) {
-      // Update existing application
-      updateJobApplication(applicationId, values);
-    } else {
-      // Add new application
-      addJobApplication(values);
-    }
-    
+  const onSubmit = (data: any) => {
+    addJobApplication(data);
     onSuccess();
   };
   
@@ -80,21 +47,22 @@ const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: 
           name="jobPostingId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vị trí tuyển dụng</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} disabled={!!preselectedJobPostingId}>
+              <FormLabel>Vị trí ứng tuyển</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn vị trí ứng tuyển" />
+                    <SelectValue placeholder="Chọn vị trí tuyển dụng" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {jobPostings
-                    .filter(posting => posting.status === 'open')
-                    .map((posting) => (
-                      <SelectItem key={posting.id} value={posting.id}>
-                        {posting.title}
-                      </SelectItem>
-                    ))}
+                  {jobPostings.map((posting) => (
+                    <SelectItem key={posting.id} value={posting.id}>
+                      {posting.title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -109,7 +77,7 @@ const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: 
             <FormItem>
               <FormLabel>Họ và tên</FormLabel>
               <FormControl>
-                <Input placeholder="Nhập họ và tên ứng viên" {...field} />
+                <Input placeholder="Nhập họ và tên đầy đủ" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -138,7 +106,7 @@ const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: 
               <FormItem>
                 <FormLabel>Số điện thoại</FormLabel>
                 <FormControl>
-                  <Input placeholder="Số điện thoại" {...field} />
+                  <Input placeholder="Ví dụ: 0901234567" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -151,9 +119,9 @@ const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: 
           name="resumeUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Link CV (URL)</FormLabel>
+              <FormLabel>Link hồ sơ (URL)</FormLabel>
               <FormControl>
-                <Input placeholder="https://example.com/cv.pdf" {...field} value={field.value || ''} />
+                <Input placeholder="https://example.com/resume.pdf" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -165,13 +133,12 @@ const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: 
           name="coverLetter"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Thư xin việc</FormLabel>
+              <FormLabel>Thư ngỏ</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Nhập nội dung thư xin việc" 
-                  className="min-h-[100px]" 
+                  placeholder="Nhập thư ngỏ..." 
+                  className="min-h-[150px]" 
                   {...field} 
-                  value={field.value || ''}
                 />
               </FormControl>
               <FormMessage />
@@ -185,7 +152,10 @@ const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Trạng thái</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn trạng thái" />
@@ -195,7 +165,7 @@ const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: 
                   <SelectItem value="new">Mới</SelectItem>
                   <SelectItem value="reviewing">Đang xem xét</SelectItem>
                   <SelectItem value="interview">Phỏng vấn</SelectItem>
-                  <SelectItem value="offered">Đã offer</SelectItem>
+                  <SelectItem value="offered">Đã đề xuất</SelectItem>
                   <SelectItem value="hired">Đã tuyển</SelectItem>
                   <SelectItem value="rejected">Từ chối</SelectItem>
                 </SelectContent>
@@ -205,32 +175,9 @@ const ApplicationForm = ({ applicationId, preselectedJobPostingId, onSuccess }: 
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ghi chú</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Nhập ghi chú về ứng viên" 
-                  className="min-h-[80px]" 
-                  {...field} 
-                  value={field.value || ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="flex justify-end space-x-2 mt-6">
-          <Button type="button" variant="outline" onClick={onSuccess}>
-            Hủy
-          </Button>
-          <Button type="submit">
-            {applicationId ? 'Cập nhật' : 'Thêm hồ sơ'}
-          </Button>
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onSuccess}>Hủy</Button>
+          <Button type="submit">Lưu hồ sơ</Button>
         </div>
       </form>
     </Form>

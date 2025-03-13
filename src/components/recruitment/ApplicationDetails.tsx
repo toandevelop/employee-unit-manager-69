@@ -1,488 +1,330 @@
 
 import { useState } from 'react';
 import { useAppStore } from '@/store';
-import { Badge } from '@/components/ui/badge';
+import { JobApplication, Interview } from '@/types';
 import { Button } from '@/components/ui/button';
-import { 
-  Calendar, 
-  Mail, 
-  Phone, 
-  Link, 
-  FileText, 
-  ExternalLink,
-  Clock,
-  User,
-  MapPin,
-  MessageSquare,
-  Star,
-  Plus,
-  Edit,
-  Trash2
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ApplicationForm from './ApplicationForm';
+import { Calendar, Clock, MapPin, Users, LinkIcon, FileText, Edit, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import InterviewForm from './InterviewForm';
 
 interface ApplicationDetailsProps {
-  applicationId: string;
+  application: JobApplication;
   onClose: () => void;
 }
 
-const ApplicationDetails = ({ applicationId, onClose }: ApplicationDetailsProps) => {
-  const { 
-    jobApplications, 
-    jobPostings, 
-    interviews, 
-    updateJobApplication, 
-    deleteJobApplication,
-    deleteInterview
-  } = useAppStore();
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case 'new':
+      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Mới</Badge>;
+    case 'reviewing':
+      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Đang xem xét</Badge>;
+    case 'interview':
+      return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Phỏng vấn</Badge>;
+    case 'offered':
+      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Đã đề xuất</Badge>;
+    case 'hired':
+      return <Badge variant="outline" className="bg-primary-50 text-primary-700 border-primary-200">Đã tuyển</Badge>;
+    case 'rejected':
+      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Từ chối</Badge>;
+    default:
+      return <Badge variant="outline">Không xác định</Badge>;
+  }
+};
+
+const getInterviewStatusBadge = (status: string) => {
+  switch (status) {
+    case 'scheduled':
+      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Đã lên lịch</Badge>;
+    case 'completed':
+      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Đã hoàn thành</Badge>;
+    case 'canceled':
+      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Đã hủy</Badge>;
+    default:
+      return <Badge variant="outline">Không xác định</Badge>;
+  }
+};
+
+const ApplicationDetails = ({ application, onClose }: ApplicationDetailsProps) => {
+  const [activeTab, setActiveTab] = useState('profile');
+  const [isAddInterviewOpen, setIsAddInterviewOpen] = useState(false);
+  const [editingInterview, setEditingInterview] = useState<string | null>(null);
   
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isAddInterviewMode, setIsAddInterviewMode] = useState(false);
-  const [currentInterviewId, setCurrentInterviewId] = useState<string | null>(null);
+  const jobPostings = useAppStore((state) => state.jobPostings);
+  const interviews = useAppStore((state) => 
+    state.interviews.filter(interview => interview.applicationId === application.id)
+  );
+  const updateJobApplication = useAppStore((state) => state.updateJobApplication);
+  const deleteInterview = useAppStore((state) => state.deleteInterview);
   
-  // Get the application details
-  const application = jobApplications.find(app => app.id === applicationId);
+  const jobPosting = jobPostings.find(jp => jp.id === application.jobPostingId);
   
-  // Get the job posting details
-  const jobPosting = application 
-    ? jobPostings.find(jp => jp.id === application.jobPostingId) 
+  const handleStatusChange = (status: string) => {
+    updateJobApplication(application.id, { status });
+  };
+  
+  const editingInterviewData = editingInterview
+    ? interviews.find(interview => interview.id === editingInterview)
     : null;
   
-  // Get interviews for this application
-  const applicationInterviews = interviews.filter(
-    interview => interview.applicationId === applicationId
-  );
-  
-  if (!application) {
-    return <div>Không tìm thấy hồ sơ ứng viên.</div>;
-  }
-  
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'new':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'reviewing':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'interview':
-        return 'bg-amber-100 text-amber-800 border-amber-300';
-      case 'offered':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'hired':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-300';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
-  
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'new':
-        return 'Mới';
-      case 'reviewing':
-        return 'Đang xem xét';
-      case 'interview':
-        return 'Phỏng vấn';
-      case 'offered':
-        return 'Đã offer';
-      case 'hired':
-        return 'Đã tuyển';
-      case 'rejected':
-        return 'Từ chối';
-      default:
-        return status;
-    }
-  };
-  
-  const getInterviewStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'completed':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'canceled':
-        return 'bg-red-100 text-red-800 border-red-300';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
-  
-  const getInterviewStatusText = (status: string) => {
-    switch (status) {
-      case 'scheduled':
-        return 'Đã lên lịch';
-      case 'completed':
-        return 'Đã hoàn thành';
-      case 'canceled':
-        return 'Đã hủy';
-      default:
-        return status;
-    }
-  };
-  
-  const getInterviewTypeText = (type: string) => {
-    switch (type) {
-      case 'phone':
-        return 'Phỏng vấn qua điện thoại';
-      case 'online':
-        return 'Phỏng vấn trực tuyến';
-      case 'in-person':
-        return 'Phỏng vấn trực tiếp';
-      default:
-        return type;
-    }
-  };
-  
-  const handleDeleteApplication = () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa hồ sơ ứng viên này không?')) {
-      deleteJobApplication(applicationId);
-      onClose();
-    }
-  };
-  
-  const handleDeleteInterview = (interviewId: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa lịch phỏng vấn này không?')) {
-      deleteInterview(interviewId);
-    }
-  };
-  
-  const handleUpdateStatus = (newStatus: 'new' | 'reviewing' | 'interview' | 'offered' | 'hired' | 'rejected') => {
-    updateJobApplication(applicationId, { status: newStatus });
-  };
-  
   return (
-    <>
-      {isEditMode ? (
-        <ApplicationForm 
-          applicationId={applicationId} 
-          onSuccess={() => setIsEditMode(false)} 
-        />
-      ) : isAddInterviewMode || currentInterviewId ? (
-        <InterviewForm 
-          applicationId={applicationId}
-          interviewId={currentInterviewId || undefined}
-          onSuccess={() => {
-            setIsAddInterviewMode(false);
-            setCurrentInterviewId(null);
-          }} 
-        />
-      ) : (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-xl font-bold">{application.fullName}</h2>
-                <Badge className={getStatusBadgeClass(application.status)}>
-                  {getStatusText(application.status)}
-                </Badge>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold">{application.fullName}</h3>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-gray-500">{jobPosting?.title || 'Vị trí không xác định'}</p>
+            {getStatusBadge(application.status)}
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Select 
+            defaultValue={application.status} 
+            onValueChange={handleStatusChange}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Cập nhật trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="new">Mới</SelectItem>
+              <SelectItem value="reviewing">Đang xem xét</SelectItem>
+              <SelectItem value="interview">Phỏng vấn</SelectItem>
+              <SelectItem value="offered">Đã đề xuất</SelectItem>
+              <SelectItem value="hired">Đã tuyển</SelectItem>
+              <SelectItem value="rejected">Từ chối</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="profile">Thông tin ứng viên</TabsTrigger>
+          <TabsTrigger value="interviews">Lịch phỏng vấn</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="profile" className="space-y-4 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Thông tin liên hệ</h4>
+                <div className="mt-2 space-y-2">
+                  <p><span className="font-medium">Email:</span> {application.email}</p>
+                  <p><span className="font-medium">Điện thoại:</span> {application.phone}</p>
+                </div>
               </div>
-              {jobPosting && (
-                <p className="text-muted-foreground">Vị trí: {jobPosting.title}</p>
+              
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Thông tin ứng tuyển</h4>
+                <div className="mt-2 space-y-2">
+                  <p><span className="font-medium">Ngày nộp hồ sơ:</span> {new Date(application.applicationDate).toLocaleDateString('vi-VN')}</p>
+                  <p className="flex items-center gap-2">
+                    <span className="font-medium">Hồ sơ:</span> 
+                    {application.resumeUrl && (
+                      <a 
+                        href={application.resumeUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center gap-1"
+                      >
+                        <LinkIcon className="h-3 w-3" />
+                        Xem hồ sơ
+                      </a>
+                    )}
+                  </p>
+                </div>
+              </div>
+              
+              {application.notes && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Ghi chú</h4>
+                  <p className="mt-2 text-sm whitespace-pre-line">{application.notes}</p>
+                </div>
               )}
             </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsEditMode(true)}
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Chỉnh sửa
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="text-destructive border-destructive hover:bg-destructive/10"
-                onClick={handleDeleteApplication}
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Xóa
-              </Button>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500">Thư ngỏ</h4>
+              {application.coverLetter ? (
+                <p className="mt-2 text-sm whitespace-pre-line">{application.coverLetter}</p>
+              ) : (
+                <p className="mt-2 text-sm text-gray-400 italic">Không có thư ngỏ</p>
+              )}
             </div>
           </div>
-          
-          <Tabs defaultValue="info">
-            <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="info">Thông tin</TabsTrigger>
-              <TabsTrigger value="interviews">Phỏng vấn ({applicationInterviews.length})</TabsTrigger>
-              <TabsTrigger value="actions">Hành động</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="info" className="space-y-6 pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="font-medium">Thông tin liên hệ</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>{application.email}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>{application.phone}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>Ngày nộp: {new Date(application.applicationDate).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  
-                  {application.resumeUrl && (
-                    <div>
-                      <h3 className="font-medium mb-2">CV</h3>
-                      <Button 
-                        variant="outline" 
-                        className="w-full text-center"
-                        onClick={() => window.open(application.resumeUrl, '_blank')}
-                      >
-                        <FileText className="h-4 w-4 mr-2" />
-                        <span className="truncate">Xem CV</span>
-                        <ExternalLink className="h-4 w-4 ml-2" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="space-y-4">
-                  {application.coverLetter && (
-                    <div>
-                      <h3 className="font-medium mb-2">Thư xin việc</h3>
-                      <div className="bg-muted p-3 rounded-md text-sm whitespace-pre-wrap max-h-[200px] overflow-y-auto">
-                        {application.coverLetter}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {application.notes && (
-                    <div>
-                      <h3 className="font-medium mb-2">Ghi chú</h3>
-                      <div className="bg-muted p-3 rounded-md text-sm whitespace-pre-wrap">
-                        {application.notes}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <Separator />
-              
-              {jobPosting && (
-                <div className="space-y-4">
-                  <h3 className="font-medium">Thông tin vị trí tuyển dụng</h3>
-                  <div className="bg-muted p-4 rounded-md">
-                    <h4 className="font-medium">{jobPosting.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">{jobPosting.description}</p>
-                    <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Mức lương:</span> {jobPosting.salary}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Trạng thái:</span> {jobPosting.status === 'open' ? 'Đang mở' : jobPosting.status === 'closed' ? 'Đã đóng' : 'Bản nháp'}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Ngày mở:</span> {new Date(jobPosting.openDate).toLocaleDateString()}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Ngày đóng:</span> {new Date(jobPosting.closeDate).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="interviews" className="space-y-4 pt-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">Lịch phỏng vấn</h3>
-                <Button 
-                  onClick={() => setIsAddInterviewMode(true)}
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4 mr-1" /> 
-                  Thêm lịch phỏng vấn
+        </TabsContent>
+        
+        <TabsContent value="interviews" className="space-y-4 pt-4">
+          <div className="flex justify-between">
+            <h4 className="text-sm font-medium">Lịch phỏng vấn</h4>
+            <Dialog open={isAddInterviewOpen} onOpenChange={setIsAddInterviewOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Lên lịch phỏng vấn
                 </Button>
-              </div>
-              
-              {applicationInterviews.length === 0 ? (
-                <div className="text-center py-8 bg-muted rounded-md">
-                  <p className="text-muted-foreground">Chưa có lịch phỏng vấn nào được lên lịch.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {applicationInterviews.map((interview) => (
-                    <div key={interview.id} className="border rounded-md p-4">
-                      <div className="flex justify-between items-start">
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Lên lịch phỏng vấn mới</DialogTitle>
+                </DialogHeader>
+                <InterviewForm 
+                  applicationId={application.id} 
+                  onSuccess={() => setIsAddInterviewOpen(false)} 
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          {interviews.length > 0 ? (
+            <div className="space-y-4">
+              {interviews.map((interview) => (
+                <div 
+                  key={interview.id}
+                  className="border rounded-lg p-4 relative"
+                >
+                  <div className="absolute top-4 right-4 flex gap-2">
+                    <Dialog open={editingInterview === interview.id} onOpenChange={(open) => {
+                      if (!open) setEditingInterview(null);
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="ghost" onClick={() => setEditingInterview(interview.id)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Chỉnh sửa lịch phỏng vấn</DialogTitle>
+                        </DialogHeader>
+                        {editingInterviewData && (
+                          <InterviewForm 
+                            applicationId={application.id}
+                            interview={editingInterviewData}
+                            onSuccess={() => setEditingInterview(null)} 
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                    
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={() => deleteInterview(interview.id)}
+                      className="text-red-500"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-2">
+                      <h5 className="font-medium">{interview.interviewType === 'phone' ? 'Phỏng vấn điện thoại' : interview.interviewType === 'online' ? 'Phỏng vấn trực tuyến' : 'Phỏng vấn trực tiếp'}</h5>
+                      {getInterviewStatusBadge(interview.status)}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <span>Ngày: {new Date(interview.interviewDate).toLocaleDateString('vi-VN')}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-500" />
+                        <span>Giờ: {interview.interviewTime}</span>
+                      </div>
+                      
+                      {interview.location && (
                         <div className="flex items-center gap-2">
-                          <Badge className={getInterviewStatusBadgeClass(interview.status)}>
-                            {getInterviewStatusText(interview.status)}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {getInterviewTypeText(interview.interviewType)}
-                          </span>
+                          <MapPin className="h-4 w-4 text-gray-500" />
+                          <span>{interview.location}</span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => setCurrentInterviewId(interview.id)}
+                      )}
+                      
+                      {interview.meetingLink && (
+                        <div className="flex items-center gap-2">
+                          <LinkIcon className="h-4 w-4 text-gray-500" />
+                          <a 
+                            href={interview.meetingLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
                           >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => handleDeleteInterview(interview.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                            Link phỏng vấn
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        <Users className="h-4 w-4 text-gray-500 mt-0.5" />
+                        <div>
+                          <span className="font-medium">Người phỏng vấn:</span>
+                          <div className="mt-1">
+                            {interview.interviewers.map((interviewer, index) => (
+                              <div key={index}>{interviewer}</div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                        <div className="space-y-2">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>{new Date(interview.interviewDate).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>{interview.interviewTime}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>
-                              {interview.interviewers.join(', ')}
-                            </span>
+                      {interview.notes && (
+                        <div className="flex items-start gap-2">
+                          <FileText className="h-4 w-4 text-gray-500 mt-0.5" />
+                          <div>
+                            <span className="font-medium">Ghi chú:</span>
+                            <p className="mt-1 text-sm whitespace-pre-line">{interview.notes}</p>
                           </div>
                         </div>
-                        
-                        <div className="space-y-2">
-                          {interview.location && (
-                            <div className="flex items-center">
-                              <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>{interview.location}</span>
-                            </div>
-                          )}
-                          
-                          {interview.meetingLink && (
-                            <div className="flex items-center">
-                              <Link className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <a 
-                                href={interview.meetingLink} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
-                              >
-                                Link phỏng vấn
-                              </a>
-                            </div>
-                          )}
-                          
-                          {interview.rating && (
-                            <div className="flex items-center">
-                              <Star className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>Đánh giá: {interview.rating}/5</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      )}
                       
-                      {(interview.notes || interview.feedback) && (
+                      {interview.feedback && (
                         <div className="mt-3 pt-3 border-t">
-                          {interview.notes && (
-                            <div className="mb-2">
-                              <div className="flex items-center mb-1">
-                                <MessageSquare className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span className="text-sm font-medium">Ghi chú:</span>
-                              </div>
-                              <p className="text-sm whitespace-pre-wrap pl-5">{interview.notes}</p>
-                            </div>
-                          )}
-                          
-                          {interview.feedback && (
-                            <div>
-                              <div className="flex items-center mb-1">
-                                <MessageSquare className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span className="text-sm font-medium">Đánh giá:</span>
-                              </div>
-                              <p className="text-sm whitespace-pre-wrap pl-5">{interview.feedback}</p>
+                          <span className="font-medium">Đánh giá:</span>
+                          <p className="mt-1 text-sm whitespace-pre-line">{interview.feedback}</p>
+                          {interview.rating && (
+                            <div className="mt-1 flex">
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i} className={`text-${i < interview.rating! ? 'yellow' : 'gray'}-400`}>★</span>
+                              ))}
                             </div>
                           )}
                         </div>
                       )}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="actions" className="space-y-4 pt-4">
-              <h3 className="font-medium">Chuyển trạng thái</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <Button 
-                  variant="outline" 
-                  className={application.status === 'new' ? 'border-blue-500 bg-blue-50' : ''}
-                  onClick={() => handleUpdateStatus('new')}
-                >
-                  Mới
-                </Button>
-                <Button 
-                  variant="outline"
-                  className={application.status === 'reviewing' ? 'border-purple-500 bg-purple-50' : ''}
-                  onClick={() => handleUpdateStatus('reviewing')}
-                >
-                  Đang xem xét
-                </Button>
-                <Button 
-                  variant="outline"
-                  className={application.status === 'interview' ? 'border-amber-500 bg-amber-50' : ''}
-                  onClick={() => handleUpdateStatus('interview')}
-                >
-                  Phỏng vấn
-                </Button>
-                <Button 
-                  variant="outline"
-                  className={application.status === 'offered' ? 'border-green-500 bg-green-50' : ''}
-                  onClick={() => handleUpdateStatus('offered')}
-                >
-                  Đã offer
-                </Button>
-                <Button 
-                  variant="outline"
-                  className={application.status === 'hired' ? 'border-emerald-500 bg-emerald-50' : ''}
-                  onClick={() => handleUpdateStatus('hired')}
-                >
-                  Đã tuyển
-                </Button>
-                <Button 
-                  variant="outline"
-                  className={application.status === 'rejected' ? 'border-red-500 bg-red-50' : ''}
-                  onClick={() => handleUpdateStatus('rejected')}
-                >
-                  Từ chối
-                </Button>
-              </div>
-              
-              <div className="pt-4 border-t mt-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => setIsAddInterviewMode(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Lên lịch phỏng vấn
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
-    </>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              Chưa có lịch phỏng vấn nào được lên. Hãy tạo lịch phỏng vấn mới.
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+      
+      <div className="flex justify-end pt-4">
+        <Button variant="outline" onClick={onClose}>Đóng</Button>
+      </div>
+    </div>
   );
 };
 
