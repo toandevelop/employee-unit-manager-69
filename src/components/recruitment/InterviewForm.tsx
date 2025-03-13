@@ -1,50 +1,24 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useAppStore } from '@/store';
 import { Interview } from '@/types';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { Form } from '@/components/ui/form';
+import { interviewFormSchema, InterviewFormValues } from './schemas/interviewFormSchema';
+import InterviewDateTimeFields from './form-fields/InterviewDateTimeFields';
+import InterviewTypeField from './form-fields/InterviewTypeField';
+import InterviewLocationField from './form-fields/InterviewLocationField';
+import InterviewersField from './form-fields/InterviewersField';
+import InterviewNotesField from './form-fields/InterviewNotesField';
+import InterviewStatusField from './form-fields/InterviewStatusField';
+import InterviewFeedbackFields from './form-fields/InterviewFeedbackFields';
+import FormActions from './form-fields/FormActions';
 
 interface InterviewFormProps {
   applicationId: string;
   interview?: Interview;
   onSuccess: () => void;
 }
-
-// Define the interview form schema
-const interviewFormSchema = z.object({
-  applicationId: z.string(),
-  interviewDate: z.date(),
-  interviewTime: z.string(),
-  interviewType: z.enum(['phone', 'online', 'in-person']),
-  interviewersInput: z.string(),
-  location: z.string().optional(),
-  meetingLink: z.string().optional(),
-  notes: z.string().optional(),
-  status: z.enum(['scheduled', 'completed', 'canceled']),
-  feedback: z.string().optional(),
-  rating: z.number().optional(),
-});
-
-// Infer the types from the schema
-type InterviewFormValues = z.infer<typeof interviewFormSchema>;
 
 const InterviewForm = ({ applicationId, interview, onSuccess }: InterviewFormProps) => {
   const addInterview = useAppStore((state) => state.addInterview);
@@ -76,6 +50,7 @@ const InterviewForm = ({ applicationId, interview, onSuccess }: InterviewFormPro
   });
   
   const watchInterviewType = form.watch('interviewType');
+  const watchStatus = form.watch('status');
   
   const onSubmit = (data: InterviewFormValues) => {
     // Convert the comma-separated interviewers string to an array
@@ -105,220 +80,14 @@ const InterviewForm = ({ applicationId, interview, onSuccess }: InterviewFormPro
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="interviewDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Ngày phỏng vấn</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className="pl-3 text-left font-normal"
-                      >
-                        {field.value ? (
-                          format(field.value, 'dd/MM/yyyy', { locale: vi })
-                        ) : (
-                          <span>Chọn ngày</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="interviewTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Giờ phỏng vấn</FormLabel>
-                <FormControl>
-                  <Input type="time" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="interviewType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Hình thức phỏng vấn</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                value={field.value || undefined}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn hình thức phỏng vấn" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="phone">Phỏng vấn qua điện thoại</SelectItem>
-                  <SelectItem value="online">Phỏng vấn trực tuyến</SelectItem>
-                  <SelectItem value="in-person">Phỏng vấn trực tiếp</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {watchInterviewType === 'in-person' && (
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Địa điểm</FormLabel>
-                <FormControl>
-                  <Input placeholder="Vd: Phòng họp tầng 3, 123 Đường ABC..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        
-        {watchInterviewType === 'online' && (
-          <FormField
-            control={form.control}
-            name="meetingLink"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Link phỏng vấn</FormLabel>
-                <FormControl>
-                  <Input placeholder="Vd: https://meet.google.com/abc-def-ghi" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        
-        <FormField
-          control={form.control}
-          name="interviewersInput"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Người phỏng vấn</FormLabel>
-              <FormControl>
-                <Input placeholder="Tên người phỏng vấn, cách nhau bởi dấu phẩy" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ghi chú</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Ghi chú cho buổi phỏng vấn..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Trạng thái</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                value={field.value || undefined}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn trạng thái" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="scheduled">Đã lên lịch</SelectItem>
-                  <SelectItem value="completed">Đã hoàn thành</SelectItem>
-                  <SelectItem value="canceled">Đã hủy</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {form.watch('status') === 'completed' && (
-          <>
-            <FormField
-              control={form.control}
-              name="feedback"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Đánh giá</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Nhận xét sau phỏng vấn..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="rating"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Đánh giá (số sao)</FormLabel>
-                  <Select 
-                    onValueChange={(value) => field.onChange(Number(value))} 
-                    value={field.value?.toString() || undefined}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn số sao đánh giá" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="1">1 sao</SelectItem>
-                      <SelectItem value="2">2 sao</SelectItem>
-                      <SelectItem value="3">3 sao</SelectItem>
-                      <SelectItem value="4">4 sao</SelectItem>
-                      <SelectItem value="5">5 sao</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        )}
-        
-        <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={onSuccess}>Hủy</Button>
-          <Button type="submit">{interview ? 'Cập nhật' : 'Tạo mới'}</Button>
-        </div>
+        <InterviewDateTimeFields form={form} />
+        <InterviewTypeField form={form} />
+        <InterviewLocationField form={form} interviewType={watchInterviewType} />
+        <InterviewersField form={form} />
+        <InterviewNotesField form={form} />
+        <InterviewStatusField form={form} />
+        <InterviewFeedbackFields form={form} status={watchStatus} />
+        <FormActions onCancel={onSuccess} isEditing={!!interview} />
       </form>
     </Form>
   );
