@@ -1,5 +1,7 @@
 
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useAppStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,11 +20,26 @@ interface ApplicationFormProps {
   onSuccess: () => void;
 }
 
+const applicationFormSchema = z.object({
+  jobPostingId: z.string().min(1, { message: 'Vui lòng chọn vị trí ứng tuyển' }),
+  fullName: z.string().min(2, { message: 'Vui lòng nhập họ và tên đầy đủ' }),
+  email: z.string().email({ message: 'Email không hợp lệ' }),
+  phone: z.string().min(10, { message: 'Số điện thoại không hợp lệ' }),
+  resumeUrl: z.string().url({ message: 'URL không hợp lệ' }).optional().or(z.literal('')),
+  coverLetter: z.string().optional(),
+  status: z.enum(['new', 'reviewing', 'interview', 'offered', 'hired', 'rejected'], { 
+    required_error: 'Vui lòng chọn trạng thái' 
+  }),
+});
+
+type ApplicationFormValues = z.infer<typeof applicationFormSchema>;
+
 const ApplicationForm = ({ onSuccess }: ApplicationFormProps) => {
   const jobPostings = useAppStore((state) => state.jobPostings.filter(jp => jp.status === 'open'));
   const addJobApplication = useAppStore((state) => state.addJobApplication);
   
-  const form = useForm({
+  const form = useForm<ApplicationFormValues>({
+    resolver: zodResolver(applicationFormSchema),
     defaultValues: {
       jobPostingId: '',
       fullName: '',
@@ -34,7 +51,7 @@ const ApplicationForm = ({ onSuccess }: ApplicationFormProps) => {
     },
   });
   
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: ApplicationFormValues) => {
     addJobApplication(data);
     onSuccess();
   };
@@ -50,7 +67,7 @@ const ApplicationForm = ({ onSuccess }: ApplicationFormProps) => {
               <FormLabel>Vị trí ứng tuyển</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
-                defaultValue={field.value}
+                value={field.value || undefined}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -154,7 +171,7 @@ const ApplicationForm = ({ onSuccess }: ApplicationFormProps) => {
               <FormLabel>Trạng thái</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
-                defaultValue={field.value}
+                value={field.value || undefined}
               >
                 <FormControl>
                   <SelectTrigger>
