@@ -1,9 +1,7 @@
-
 import { useState } from 'react';
 import { useAppStore } from '@/store';
-import { JobApplication, Interview } from '@/types';
+import { JobApplication } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Clock, MapPin, Users, LinkIcon, FileText, Edit, Trash2 } from 'lucide-react';
 import {
@@ -21,43 +19,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import InterviewForm from './InterviewForm';
+import StatusBadge from './StatusBadge';
 
 interface ApplicationDetailsProps {
   application: JobApplication;
   onClose: () => void;
 }
-
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'new':
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Mới</Badge>;
-    case 'reviewing':
-      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Đang xem xét</Badge>;
-    case 'interview':
-      return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Phỏng vấn</Badge>;
-    case 'offered':
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Đã đề xuất</Badge>;
-    case 'hired':
-      return <Badge variant="outline" className="bg-primary-50 text-primary-700 border-primary-200">Đã tuyển</Badge>;
-    case 'rejected':
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Từ chối</Badge>;
-    default:
-      return <Badge variant="outline">Không xác định</Badge>;
-  }
-};
-
-const getInterviewStatusBadge = (status: string) => {
-  switch (status) {
-    case 'scheduled':
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Đã lên lịch</Badge>;
-    case 'completed':
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Đã hoàn thành</Badge>;
-    case 'canceled':
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Đã hủy</Badge>;
-    default:
-      return <Badge variant="outline">Không xác định</Badge>;
-  }
-};
 
 const ApplicationDetails = ({ application, onClose }: ApplicationDetailsProps) => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -88,13 +55,13 @@ const ApplicationDetails = ({ application, onClose }: ApplicationDetailsProps) =
           <h3 className="text-lg font-semibold">{application.fullName}</h3>
           <div className="flex items-center gap-2 mt-1">
             <p className="text-sm text-gray-500">{jobPosting?.title || 'Vị trí không xác định'}</p>
-            {getStatusBadge(application.status)}
+            <StatusBadge status={application.status} type="application" />
           </div>
         </div>
         
         <div className="flex items-center gap-2">
           <Select 
-            defaultValue={application.status} 
+            value={application.status} 
             onValueChange={handleStatusChange}
           >
             <SelectTrigger className="w-[180px]">
@@ -234,7 +201,7 @@ const ApplicationDetails = ({ application, onClose }: ApplicationDetailsProps) =
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-2">
                       <h5 className="font-medium">{interview.interviewType === 'phone' ? 'Phỏng vấn điện thoại' : interview.interviewType === 'online' ? 'Phỏng vấn trực tuyến' : 'Phỏng vấn trực tiếp'}</h5>
-                      {getInterviewStatusBadge(interview.status)}
+                      <StatusBadge status={interview.status} type="interview" />
                     </div>
                   </div>
                   

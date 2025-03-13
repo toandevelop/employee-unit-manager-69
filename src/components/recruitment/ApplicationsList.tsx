@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAppStore } from '@/store';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -22,25 +20,7 @@ import { Plus, Eye, Trash2 } from 'lucide-react';
 import ApplicationForm from './ApplicationForm';
 import ApplicationDetails from './ApplicationDetails';
 import { Card, CardContent } from '@/components/ui/card';
-
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'new':
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Mới</Badge>;
-    case 'reviewing':
-      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Đang xem xét</Badge>;
-    case 'interview':
-      return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Phỏng vấn</Badge>;
-    case 'offered':
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Đã đề xuất</Badge>;
-    case 'hired':
-      return <Badge variant="outline" className="bg-primary-50 text-primary-700 border-primary-200">Đã tuyển</Badge>;
-    case 'rejected':
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Từ chối</Badge>;
-    default:
-      return <Badge variant="outline">Không xác định</Badge>;
-  }
-};
+import StatusBadge from './StatusBadge';
 
 const ApplicationsList = () => {
   const jobApplications = useAppStore((state) => state.jobApplications);
@@ -99,7 +79,9 @@ const ApplicationsList = () => {
                   </TableCell>
                   <TableCell>{getJobTitle(application.jobPostingId)}</TableCell>
                   <TableCell>{new Date(application.applicationDate).toLocaleDateString('vi-VN')}</TableCell>
-                  <TableCell>{getStatusBadge(application.status)}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={application.status} type="application" />
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Dialog open={viewingApplication === application.id} onOpenChange={(open) => {
